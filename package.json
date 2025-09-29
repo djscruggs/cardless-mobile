@@ -1,6 +1,6 @@
 {
-  "name": "obytesapp",
-  "version": "8.0.0",
+  "name": "cardless",
+  "version": "0.0.1",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -135,7 +135,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/obytes/react-native-template-obytes.git"
+    "url": "git+https://github.com/user/repo-name.git"
   },
   "packageManager": "pnpm@10.12.3",
   "expo": {
@@ -152,5 +152,8 @@
         "eslint-config-expo"
       ]
     }
+  },
+  "osMetadata": {
+    "initVersion": "8.0.0"
   }
 }
