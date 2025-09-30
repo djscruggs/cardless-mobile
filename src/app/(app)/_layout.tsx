@@ -1,21 +1,22 @@
-/* eslint-disable react/no-unstable-nested-components */
-import { Link, Redirect, SplashScreen, Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Redirect, SplashScreen, Tabs } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
+import { Image } from 'react-native';
 
-import { Pressable, Text } from '@/components/ui';
-import {
-  Feed as FeedIcon,
-  Settings as SettingsIcon,
-  Style as StyleIcon,
-} from '@/components/ui/icons';
 import { useAuth, useIsFirstTime } from '@/lib';
 
-export default function TabLayout() {
-  const status = useAuth.use.status();
-  const [isFirstTime] = useIsFirstTime();
+const LogoIcon = () => (
+  <Image
+    source={require('../../../assets/favicon.png')}
+    style={{ width: 24, height: 24 }}
+  />
+);
+
+const useSplashScreen = (status: string) => {
   const hideSplash = useCallback(async () => {
     await SplashScreen.hideAsync();
   }, []);
+
   useEffect(() => {
     if (status !== 'idle') {
       setTimeout(() => {
@@ -23,6 +24,12 @@ export default function TabLayout() {
       }, 1000);
     }
   }, [hideSplash, status]);
+};
+
+export default function TabLayout() {
+  const status = useAuth.use.status();
+  const [isFirstTime] = useIsFirstTime();
+  useSplashScreen(status);
 
   if (isFirstTime) {
     return <Redirect href="/onboarding" />;
@@ -35,41 +42,34 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Cardless',
-          tabBarIcon: ({ color }) => <FeedIcon color={color} />,
-          headerRight: () => <CreateNewPostLink />,
-          tabBarButtonTestID: 'feed-tab',
-        }}
-      />
-
-      <Tabs.Screen
-        name="style"
-        options={{
-          title: 'Style',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <StyleIcon color={color} />,
-          tabBarButtonTestID: 'style-tab',
+          title: '',
+          headerTitle: 'My Cardless ID',
+          tabBarIcon: LogoIcon,
+          tabBarButtonTestID: 'myid-tab',
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="scan"
         options={{
-          title: 'Settings',
-          headerShown: false,
-          tabBarIcon: ({ color }) => <SettingsIcon color={color} />,
-          tabBarButtonTestID: 'settings-tab',
+          title: 'Scan',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="qr-code-outline" size={24} color={color} />
+          ),
+          tabBarButtonTestID: 'scan-tab',
         }}
       />
+      <Tabs.Screen
+        name="faq"
+        options={{
+          title: 'FAQ',
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="help-circle" size={24} color={color} />
+          ),
+          tabBarButtonTestID: 'faq-tab',
+        }}
+      />
+      <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen name="style" options={{ href: null }} />
     </Tabs>
   );
 }
-
-const CreateNewPostLink = () => {
-  return (
-    <Link href="/feed/add-post" asChild>
-      <Pressable>
-        <Text className="px-3 text-primary-300">Create</Text>
-      </Pressable>
-    </Link>
-  );
-};
