@@ -10,6 +10,6 @@ type Variables = void; // as react-query-kit is strongly typed, we need to speci
 export const usePosts = createQuery<Response, Variables, AxiosError>({
   queryKey: ['posts'],
   fetcher: () => {
-    return client.get(`posts`).then((response) => response.data.posts);
+    return client.get(`posts`).then((response) => response.data);
   },
 });
