@@ -1,29 +1,160 @@
+import { Env } from '@env';
+import { useFocusEffect, useRouter } from 'expo-router';
 import React from 'react';
 
-import { FocusAwareStatusBar, Text, View } from '@/components/ui';
+import {
+  Button,
+  FocusAwareStatusBar,
+  ScrollView,
+  Text,
+  View,
+} from '@/components/ui';
+import { credentialStorage } from '@/lib';
 
+/* eslint-disable max-lines-per-function */
 export default function MyID() {
+  const router = useRouter();
+  const [credential, setCredential] =
+    React.useState<ReturnType<typeof credentialStorage.getCredential>>(null);
+  const [personalData, setPersonalData] =
+    React.useState<ReturnType<typeof credentialStorage.getPersonalData>>(null);
+  const isDevelopment = Env.APP_ENV !== 'production';
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setCredential(credentialStorage.getCredential());
+      setPersonalData(credentialStorage.getPersonalData());
+    }, [])
+  );
+
+  const handleCreateIdentity = () => {
+    router.push('/(app)/create-identity');
+  };
+
+  const handleClearCredential = async () => {
+    await credentialStorage.clearCredential();
+    setCredential(null);
+    setPersonalData(null);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
   return (
-    <View className="flex-1 items-center justify-center p-4">
+    <View className="flex-1">
       <FocusAwareStatusBar />
-      <View className="w-full max-w-md rounded-lg border-2 border-gray-300 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-        <View className="my-8 items-center justify-center rounded-lg border border-dashed border-gray-400 bg-gray-100 p-8 dark:border-gray-600 dark:bg-gray-700">
-          <Text className="text-center text-gray-500 dark:text-gray-400">
-            DID Credential
-          </Text>
-          <Text className="mt-2 text-center text-sm text-gray-400 dark:text-gray-500">
-            (To be implemented)
-          </Text>
+      <ScrollView>
+        <View className="flex-1 items-center p-4">
+          <View className="w-full max-w-md rounded-lg border-2 border-gray-300 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            {credential && personalData ? (
+              <>
+                <View className="mb-6">
+                  <Text className="text-center text-3xl font-bold dark:text-white">
+                    Cardless ID
+                  </Text>
+                  <Text className="mt-1 text-center text-sm font-medium text-green-600 dark:text-green-400">
+                    ✓ Verified Credential
+                  </Text>
+                </View>
+
+                <View className="space-y-6">
+                  <View className="items-center">
+                    <Text className="text-center text-2xl font-bold dark:text-white">
+                      {personalData.firstName}{' '}
+                      {personalData.middleName && personalData.middleName + ' '}
+                      {personalData.lastName}
+                    </Text>
+                  </View>
+
+                  <View className="space-y-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
+                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                      <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        Date of Birth
+                      </Text>
+                      <Text className="text-base font-semibold dark:text-white">
+                        {formatDate(personalData.birthDate)}
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                      <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        ID Type
+                      </Text>
+                      <Text className="text-base font-semibold dark:text-white">
+                        {personalData.idType === 'drivers_license'
+                          ? "Driver's License"
+                          : 'Passport'}
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                      <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        ID Number
+                      </Text>
+                      <Text className="text-base font-semibold dark:text-white">
+                        {personalData.governmentId}
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                      <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        State
+                      </Text>
+                      <Text className="text-base font-semibold dark:text-white">
+                        {personalData.state}
+                      </Text>
+                    </View>
+
+                    <View className="flex-row items-center justify-between">
+                      <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                        Issued
+                      </Text>
+                      <Text className="text-base font-semibold dark:text-white">
+                        {formatDate(credential.issuanceDate)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                {isDevelopment && (
+                  <View className="mt-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+                    <Button
+                      label="Clear Credential (Dev Only)"
+                      variant="destructive"
+                      onPress={handleClearCredential}
+                      testID="clear-credential-button"
+                    />
+                  </View>
+                )}
+              </>
+            ) : (
+              <>
+                <View className="my-8 items-center justify-center rounded-lg border border-dashed border-gray-400 bg-gray-100 p-8 dark:border-gray-600 dark:bg-gray-700">
+                  <Text className="text-center text-gray-500 dark:text-gray-400">
+                    No Credential
+                  </Text>
+                  <Text className="mt-2 text-center text-sm text-gray-400 dark:text-gray-500">
+                    Create your identity to get started
+                  </Text>
+                </View>
+                <View className="mt-6">
+                  <Button
+                    label="Create Identity"
+                    onPress={handleCreateIdentity}
+                    testID="create-identity-button"
+                  />
+                </View>
+              </>
+            )}
+          </View>
         </View>
-        <View className="mt-4 space-y-2">
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            Status: <Text className="font-semibold">Not Verified</Text>
-          </Text>
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
-            Wallet Address: <Text className="font-semibold">Not Connected</Text>
-          </Text>
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
