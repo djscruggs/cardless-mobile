@@ -52,4 +52,16 @@ export type VerifiableCredential = {
 export type CredentialResponse = {
   credential: VerifiableCredential;
   personalData: PersonalData;
+  blockchain?: {
+    credentialTransaction: {
+      id: string;
+      explorerUrl: string;
+      note: string;
+    };
+    verificationTransaction: {
+      id: string;
+      explorerUrl: string;
+      note: string;
+    };
+  };
 };

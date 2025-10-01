@@ -25,7 +25,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="obytesApp"/>
-        <data android:scheme="exp+obytesapp"/>
+        <data android:scheme="exp+cardlessid"/>
       </intent-filter>
     </activity>
   </application>
