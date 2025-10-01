@@ -23,6 +23,10 @@ export default function MyID() {
     React.useState<ReturnType<typeof credentialStorage.getPersonalData>>(null);
   const [blockchain, setBlockchain] =
     React.useState<ReturnType<typeof credentialStorage.getBlockchain>>(null);
+  const [duplicateDetection, setDuplicateDetection] =
+    React.useState<ReturnType<typeof credentialStorage.getDuplicateDetection>>(
+      null
+    );
   const [showJSONModal, setShowJSONModal] = React.useState(false);
   const isDevelopment = Env.APP_ENV !== 'production';
 
@@ -31,6 +35,7 @@ export default function MyID() {
       setCredential(credentialStorage.getCredential());
       setPersonalData(credentialStorage.getPersonalData());
       setBlockchain(credentialStorage.getBlockchain());
+      setDuplicateDetection(credentialStorage.getDuplicateDetection());
     }, [])
   );
 
@@ -43,21 +48,16 @@ export default function MyID() {
     setCredential(null);
     setPersonalData(null);
     setBlockchain(null);
+    setDuplicateDetection(null);
   };
 
   const handleViewRawJSON = () => {
     setShowJSONModal(true);
   };
 
-  const handleViewCredentialTx = () => {
-    if (blockchain?.credentialTransaction?.explorerUrl) {
-      Linking.openURL(blockchain.credentialTransaction.explorerUrl);
-    }
-  };
-
-  const handleViewVerificationTx = () => {
-    if (blockchain?.verificationTransaction?.explorerUrl) {
-      Linking.openURL(blockchain.verificationTransaction.explorerUrl);
+  const handleViewTransaction = () => {
+    if (blockchain?.transaction?.explorerUrl) {
+      Linking.openURL(blockchain.transaction.explorerUrl);
     }
   };
 
@@ -74,6 +74,7 @@ export default function MyID() {
       credential,
       personalData,
       blockchain,
+      duplicateDetection,
     };
     return JSON.stringify(jsonData, null, 2);
   };
@@ -166,8 +167,8 @@ export default function MyID() {
                         ID Type
                       </Text>
                       <Text className="text-base font-semibold dark:text-white">
-                        {personalData.idType === 'drivers_license'
-                          ? "Driver's License"
+                        {personalData.idType === 'government_id'
+                          ? 'Government ID'
                           : 'Passport'}
                       </Text>
                     </View>
@@ -206,20 +207,24 @@ export default function MyID() {
                     <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
                       Developer Info
                     </Text>
-                    {blockchain?.verificationTransaction?.explorerUrl && (
-                      <Button
-                        label="View Verification Tx"
-                        variant="default"
-                        onPress={handleViewVerificationTx}
-                        testID="view-verification-tx-button"
-                      />
+                    {duplicateDetection && (
+                      <View className="mb-4 rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900">
+                        <Text className="text-center font-semibold dark:text-white">
+                          {duplicateDetection.isDuplicate
+                            ? `⚠️ ${duplicateDetection.duplicateCount} Duplicate${duplicateDetection.duplicateCount > 1 ? 's' : ''} Found`
+                            : '✓ No Duplicates'}
+                        </Text>
+                        <Text className="mt-1 text-center text-sm dark:text-gray-300">
+                          {duplicateDetection.message}
+                        </Text>
+                      </View>
                     )}
-                    {blockchain?.credentialTransaction?.explorerUrl && (
+                    {blockchain?.transaction?.explorerUrl && (
                       <Button
-                        label="View Credential Tx"
+                        label="View Blockchain Transaction"
                         variant="default"
-                        onPress={handleViewCredentialTx}
-                        testID="view-credential-tx-button"
+                        onPress={handleViewTransaction}
+                        testID="view-transaction-button"
                       />
                     )}
                     <Button
