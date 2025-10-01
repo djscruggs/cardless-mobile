@@ -164,7 +164,7 @@ export default function CreateIdentity() {
           />
           <ControlledInput
             name="middleName"
-            label="Middle Name (Optional)"
+            label="Middle Name"
             control={control}
             testID="middleName"
           />
