@@ -1,4 +1,4 @@
-export type IdType = 'passport' | 'drivers_license';
+export type IdType = 'passport' | 'government_id';
 
 export type CredentialRequest = {
   walletAddress: string;
@@ -53,15 +53,15 @@ export type CredentialResponse = {
   credential: VerifiableCredential;
   personalData: PersonalData;
   blockchain?: {
-    credentialTransaction: {
+    transaction: {
       id: string;
       explorerUrl: string;
       note: string;
     };
-    verificationTransaction: {
-      id: string;
-      explorerUrl: string;
-      note: string;
-    };
+  };
+  duplicateDetection?: {
+    duplicateCount: number;
+    isDuplicate: boolean;
+    message: string;
   };
 };

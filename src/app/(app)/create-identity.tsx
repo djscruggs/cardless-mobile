@@ -71,7 +71,7 @@ const US_STATES = [
 ];
 
 const ID_TYPES = [
-  { label: "Driver's License", value: 'drivers_license' },
+  { label: 'Government ID', value: 'government_id' },
   { label: 'Passport', value: 'passport' },
 ];
 
@@ -83,7 +83,7 @@ const schema = z.object({
     .string()
     .regex(/^\d{2}-\d{2}-\d{4}$/, 'Date must be in MM-DD-YYYY format'),
   governmentId: z.string().min(1, 'Government ID is required'),
-  idType: z.enum(['passport', 'drivers_license'], {
+  idType: z.enum(['passport', 'government_id'], {
     required_error: 'Please select an ID type',
   }),
   state: z.string().min(2, 'Please select a state'),
