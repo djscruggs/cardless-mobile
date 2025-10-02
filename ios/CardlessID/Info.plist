@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>ObytesApp</string>
+    <string>Cardless ID</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>obytesApp</string>
-          <string>com.obytes.development</string>
+          <string>cardlessid</string>
+          <string>com.cardlessid.development</string>
         </array>
       </dict>
       <dict>

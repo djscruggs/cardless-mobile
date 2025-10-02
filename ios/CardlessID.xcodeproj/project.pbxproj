@@ -8,30 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		3C23E8E0CEDCA2441A729C7E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 802EC3BCF29EF99E938AE5A1 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		60905B00DEB8419BE7D78CCC /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = F590D1160F9C044FC3903EFC /* ExpoModulesProvider.swift */; };
-		778C63D4CF9AEC1232DF15F4 /* libPods-ObytesApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 44AF0277522DD4BB4A923992 /* libPods-ObytesApp.a */; };
-		A8C7719D1B4D3FBD544C63DC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8B94049026FF12C0FC5C0F77 /* PrivacyInfo.xcprivacy */; };
-		B1F03A3168E74B7DBAD863F5 /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A2CB9BE8A28C4D5E96C00CA8 /* Inter.ttf */; };
+		4E2CEB285EE94B29A63530BB /* Inter.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D7985E24D11498F845636AC /* Inter.ttf */; };
+		65B097F25E2DAE95DA0CCA4E /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887B4650DFE350CC2459401E /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		C441D23AD2811871DB259D51 /* libPods-CardlessID.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 73C3F0EC1A797ADDC7C1984E /* libPods-CardlessID.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* ObytesApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ObytesApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ObytesApp/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ObytesApp/Info.plist; sourceTree = "<group>"; };
-		44AF0277522DD4BB4A923992 /* libPods-ObytesApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ObytesApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8584C4E1BE7A62E3437CA123 /* Pods-ObytesApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObytesApp.release.xcconfig"; path = "Target Support Files/Pods-ObytesApp/Pods-ObytesApp.release.xcconfig"; sourceTree = "<group>"; };
-		8B94049026FF12C0FC5C0F77 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = ObytesApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		A2CB9BE8A28C4D5E96C00CA8 /* Inter.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Inter.ttf; path = ../assets/fonts/Inter.ttf; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = ObytesApp/SplashScreen.storyboard; sourceTree = "<group>"; };
+		0D7985E24D11498F845636AC /* Inter.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = Inter.ttf; path = ../assets/fonts/Inter.ttf; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* CardlessID.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardlessID.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CardlessID/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CardlessID/Info.plist; sourceTree = "<group>"; };
+		73C3F0EC1A797ADDC7C1984E /* libPods-CardlessID.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CardlessID.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7EBF249E59CF0EA8230A1309 /* Pods-CardlessID.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CardlessID.release.xcconfig"; path = "Target Support Files/Pods-CardlessID/Pods-CardlessID.release.xcconfig"; sourceTree = "<group>"; };
+		802EC3BCF29EF99E938AE5A1 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = CardlessID/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		887B4650DFE350CC2459401E /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-CardlessID/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = CardlessID/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		BE7A7533F5A703EC7D8D62BB /* Pods-ObytesApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ObytesApp.debug.xcconfig"; path = "Target Support Files/Pods-ObytesApp/Pods-ObytesApp.debug.xcconfig"; sourceTree = "<group>"; };
+		CA760D1C4679AE258D29BC0E /* Pods-CardlessID.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CardlessID.debug.xcconfig"; path = "Target Support Files/Pods-CardlessID/Pods-CardlessID.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ObytesApp/AppDelegate.swift; sourceTree = "<group>"; };
-		F11748442D0722820044C1D9 /* ObytesApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ObytesApp-Bridging-Header.h"; path = "ObytesApp/ObytesApp-Bridging-Header.h"; sourceTree = "<group>"; };
-		F590D1160F9C044FC3903EFC /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-ObytesApp/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CardlessID/AppDelegate.swift; sourceTree = "<group>"; };
+		F11748442D0722820044C1D9 /* CardlessID-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "CardlessID-Bridging-Header.h"; path = "CardlessID/CardlessID-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,61 +39,52 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				778C63D4CF9AEC1232DF15F4 /* libPods-ObytesApp.a in Frameworks */,
+				C441D23AD2811871DB259D51 /* libPods-CardlessID.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* ObytesApp */ = {
+		11AF0B693BEEE9A12BC5F6E7 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				CA760D1C4679AE258D29BC0E /* Pods-CardlessID.debug.xcconfig */,
+				7EBF249E59CF0EA8230A1309 /* Pods-CardlessID.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		13B07FAE1A68108700A75B9A /* CardlessID */ = {
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
-				F11748442D0722820044C1D9 /* ObytesApp-Bridging-Header.h */,
+				F11748442D0722820044C1D9 /* CardlessID-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				8B94049026FF12C0FC5C0F77 /* PrivacyInfo.xcprivacy */,
+				802EC3BCF29EF99E938AE5A1 /* PrivacyInfo.xcprivacy */,
 			);
-			name = ObytesApp;
+			name = CardlessID;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				44AF0277522DD4BB4A923992 /* libPods-ObytesApp.a */,
+				73C3F0EC1A797ADDC7C1984E /* libPods-CardlessID.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		3A7BA17A6C3B27B9A6C4211E /* Pods */ = {
+		4797583134DF0BE58E653CB8 /* CardlessID */ = {
 			isa = PBXGroup;
 			children = (
-				BE7A7533F5A703EC7D8D62BB /* Pods-ObytesApp.debug.xcconfig */,
-				8584C4E1BE7A62E3437CA123 /* Pods-ObytesApp.release.xcconfig */,
+				887B4650DFE350CC2459401E /* ExpoModulesProvider.swift */,
 			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		3D78D32019A64A99A40ED675 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-				A2CB9BE8A28C4D5E96C00CA8 /* Inter.ttf */,
-			);
-			name = Resources;
-			path = "";
-			sourceTree = "<group>";
-		};
-		778BEA7C1E75C5340B160185 /* ObytesApp */ = {
-			isa = PBXGroup;
-			children = (
-				F590D1160F9C044FC3903EFC /* ExpoModulesProvider.swift */,
-			);
-			name = ObytesApp;
+			name = CardlessID;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -106,13 +97,13 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* ObytesApp */,
+				13B07FAE1A68108700A75B9A /* CardlessID */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				3D78D32019A64A99A40ED675 /* Resources */,
-				3A7BA17A6C3B27B9A6C4211E /* Pods */,
-				DB69640E0C89B13FDE7BD6CB /* ExpoModulesProviders */,
+				8E139AAC1AE14B96A1F52DDC /* Resources */,
+				11AF0B693BEEE9A12BC5F6E7 /* Pods */,
+				E15F9EF5338981C98FB7CEEA /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -122,9 +113,18 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* ObytesApp.app */,
+				13B07F961A680F5B00A75B9A /* CardlessID.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		8E139AAC1AE14B96A1F52DDC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0D7985E24D11498F845636AC /* Inter.ttf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
@@ -133,13 +133,13 @@
 				BB2F792C24A3F905000567C9 /* Expo.plist */,
 			);
 			name = Supporting;
-			path = ObytesApp/Supporting;
+			path = CardlessID/Supporting;
 			sourceTree = "<group>";
 		};
-		DB69640E0C89B13FDE7BD6CB /* ExpoModulesProviders */ = {
+		E15F9EF5338981C98FB7CEEA /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				778BEA7C1E75C5340B160185 /* ObytesApp */,
+				4797583134DF0BE58E653CB8 /* CardlessID */,
 			);
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
@@ -147,26 +147,26 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* ObytesApp */ = {
+		13B07F861A680F5B00A75B9A /* CardlessID */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ObytesApp" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CardlessID" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				5B1EE3FEE57BA2C7EE8466B8 /* [Expo] Configure project */,
+				AC376805F7761A9F57C02C69 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				A662529C16D230B1CB37A6F4 /* [CP] Embed Pods Frameworks */,
+				4171480B46260E0CED02FDBC /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = ObytesApp;
-			productName = ObytesApp;
-			productReference = 13B07F961A680F5B00A75B9A /* ObytesApp.app */;
+			name = CardlessID;
+			productName = CardlessID;
+			productReference = 13B07F961A680F5B00A75B9A /* CardlessID.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -182,7 +182,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ObytesApp" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "CardlessID" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -195,7 +195,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* ObytesApp */,
+				13B07F861A680F5B00A75B9A /* CardlessID */,
 			);
 		};
 /* End PBXProject section */
@@ -208,8 +208,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				B1F03A3168E74B7DBAD863F5 /* Inter.ttf in Resources */,
-				A8C7719D1B4D3FBD544C63DC /* PrivacyInfo.xcprivacy in Resources */,
+				4E2CEB285EE94B29A63530BB /* Inter.ttf in Resources */,
+				3C23E8E0CEDCA2441A729C7E /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -246,31 +246,30 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ObytesApp-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-CardlessID-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		5B1EE3FEE57BA2C7EE8466B8 /* [Expo] Configure project */ = {
+		4171480B46260E0CED02FDBC /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-CardlessID/Pods-CardlessID-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-ObytesApp/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CardlessID/Pods-CardlessID-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -278,7 +277,7 @@
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ObytesApp/Pods-ObytesApp-resources.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-CardlessID/Pods-CardlessID-resources.sh",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
@@ -313,26 +312,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ObytesApp/Pods-ObytesApp-resources.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-CardlessID/Pods-CardlessID-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A662529C16D230B1CB37A6F4 /* [CP] Embed Pods Frameworks */ = {
+		AC376805F7761A9F57C02C69 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ObytesApp/Pods-ObytesApp-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ObytesApp/Pods-ObytesApp-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-CardlessID/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -342,7 +342,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				60905B00DEB8419BE7D78CCC /* ExpoModulesProvider.swift in Sources */,
+				65B097F25E2DAE95DA0CCA4E /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -351,18 +351,18 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BE7A7533F5A703EC7D8D62BB /* Pods-ObytesApp.debug.xcconfig */;
+			baseConfigurationReference = CA760D1C4679AE258D29BC0E /* Pods-CardlessID.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = ObytesApp/ObytesApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = CardlessID/CardlessID.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
-				INFOPLIST_FILE = ObytesApp/Info.plist;
+				INFOPLIST_FILE = CardlessID/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -375,9 +375,9 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = com.obytes.development;
-				PRODUCT_NAME = ObytesApp;
-				SWIFT_OBJC_BRIDGING_HEADER = "ObytesApp/ObytesApp-Bridging-Header.h";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cardlessid.development;
+				PRODUCT_NAME = CardlessID;
+				SWIFT_OBJC_BRIDGING_HEADER = "CardlessID/CardlessID-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -387,13 +387,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8584C4E1BE7A62E3437CA123 /* Pods-ObytesApp.release.xcconfig */;
+			baseConfigurationReference = 7EBF249E59CF0EA8230A1309 /* Pods-CardlessID.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = ObytesApp/ObytesApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = CardlessID/CardlessID.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = ObytesApp/Info.plist;
+				INFOPLIST_FILE = CardlessID/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -406,9 +406,9 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = com.obytes.development;
-				PRODUCT_NAME = ObytesApp;
-				SWIFT_OBJC_BRIDGING_HEADER = "ObytesApp/ObytesApp-Bridging-Header.h";
+				PRODUCT_BUNDLE_IDENTIFIER = com.cardlessid.development;
+				PRODUCT_NAME = CardlessID;
+				SWIFT_OBJC_BRIDGING_HEADER = "CardlessID/CardlessID-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -542,7 +542,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ObytesApp" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "CardlessID" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -551,7 +551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ObytesApp" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "CardlessID" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,
