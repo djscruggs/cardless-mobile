@@ -457,6 +457,17 @@ export default function VerifyIdentity() {
               />
             )}
 
+            {(step === 'starting' ||
+              step === 'verifying' ||
+              step === 'polling') && (
+              <Button
+                label="Reset / Start Over"
+                variant="outline"
+                onPress={handleReset}
+                testID="reset-button"
+              />
+            )}
+
             {sessionId && (
               <View className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
                 <Text className="text-center text-xs text-gray-500 dark:text-gray-400">
