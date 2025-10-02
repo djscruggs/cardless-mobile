@@ -6,6 +6,12 @@
 
 A React Native mobile wallet application for storing and presenting decentralized identity credentials issued by cardlessid.org. The app enables age verification for adult websites without exposing personal information.
 
+### Privacy & Data Storage
+
+**No personal data is ever stored in a database.** All user credentials are stored exclusively on the user's device. The only data written to the Algorand blockchain is a cryptographic hash of the credential for verification purposes.
+
+During the identity verification process, minimal data is temporarily held in memory on the verification server to complete the verification flow. This data is **immediately wiped** once verification is complete, whether approved or rejected. No traces of personal information remain on any server after verification.
+
 ## Current State
 
 This app currently uses a **mock verification server** for testing identity verification flows. The mock server simulates third-party identity verification providers (like iDenfy or Stripe Identity) and allows manual approval/rejection of verification requests.
