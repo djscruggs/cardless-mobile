@@ -55,10 +55,6 @@ export default function MyID() {
     setDuplicateDetection(null);
   };
 
-  const handleViewOnboarding = () => {
-    router.push('/onboarding');
-  };
-
   const handleViewRawJSON = () => {
     setShowJSONModal(true);
   };
@@ -142,17 +138,8 @@ export default function MyID() {
           <View className="w-full max-w-md rounded-lg border-2 border-gray-300 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
             {credential && personalData ? (
               <>
-                <View className="mb-6">
-                  <Text className="text-center text-3xl font-bold dark:text-white">
-                    Cardless ID
-                  </Text>
-                  <Text className="mt-1 text-center text-sm font-medium text-green-600 dark:text-green-400">
-                    ✓ Verified Credential
-                  </Text>
-                </View>
-
                 <View className="space-y-6">
-                  <View className="items-center">
+                  <View className="mb-2 items-center">
                     <Text className="text-center text-2xl font-bold dark:text-white">
                       {personalData.firstName}{' '}
                       {personalData.middleName && personalData.middleName + ' '}
@@ -207,6 +194,11 @@ export default function MyID() {
                         {formatDate(credential.issuanceDate)}
                       </Text>
                     </View>
+                    <View className="mt-2">
+                      <Text className="mt-1 text-center text-sm font-medium text-green-600 dark:text-green-400">
+                        ✓ Verified Identity
+                      </Text>
+                    </View>
                   </View>
                 </View>
 
@@ -246,12 +238,6 @@ export default function MyID() {
                       variant="destructive"
                       onPress={handleClearCredential}
                       testID="clear-credential-button"
-                    />
-                    <Button
-                      label="View Onboarding"
-                      variant="outline"
-                      onPress={handleViewOnboarding}
-                      testID="view-onboarding-button"
                     />
                   </View>
                 )}
