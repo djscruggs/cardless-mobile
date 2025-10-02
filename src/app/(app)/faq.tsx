@@ -2,6 +2,7 @@ import React from 'react';
 import { ScrollView } from 'react-native';
 
 import { FocusAwareStatusBar, Text, View } from '@/components/ui';
+import { credentialStorage } from '@/lib';
 
 const FAQItem = ({
   question,
@@ -27,18 +28,14 @@ const faqData = [
   {
     question: 'How does it work?',
     answer:
-      'After verification on cardlessid.org, you receive a digital credential stored in your Algorand blockchain wallet. Websites can verify your age via QR code, and the wallet responds with true/false along with your wallet address—no other personal data is shared.',
+      'After verification on cardlessid.org, you receive a digital credential stored in your wallet. Websites can verify your age via QR code, and the wallet responds with true/false along with your wallet address—no other personal data is shared.',
   },
   {
     question: 'Is my data private?',
     answer:
-      "Yes! Zero information about you is stored in any database except what's necessary to prevent DOS attacks and provide sybil resistance. Your credential only confirms age eligibility without revealing identity.",
+      'Yes! Zero information about you is stored in any database. Your credential is on your phone and confirms age eligibility without revealing identity.',
   },
-  {
-    question: 'What is the Algorand blockchain?',
-    answer:
-      'Algorand is a secure, scalable blockchain platform that powers your decentralized digital wallet. It ensures your credentials are tamper-proof and verifiable.',
-  },
+
   {
     question: 'How do I get verified?',
     answer:
@@ -52,6 +49,30 @@ const faqData = [
 ];
 
 export default function FAQ() {
+  const [isVerified, setIsVerified] = React.useState(false);
+
+  React.useEffect(() => {
+    const credential = credentialStorage.getCredential();
+    setIsVerified(credential !== null);
+  }, []);
+
+  const getVerificationAnswer = () => {
+    if (isVerified) {
+      return 'You are already verified.';
+    }
+    return 'Tap the Cardless ID icon in the lower left corner.';
+  };
+
+  const faqDataWithVerification = faqData.map((item) => {
+    if (item.question === 'How do I get verified?') {
+      return {
+        ...item,
+        answer: getVerificationAnswer(),
+      };
+    }
+    return item;
+  });
+
   return (
     <View className="flex-1">
       <FocusAwareStatusBar />
@@ -59,7 +80,7 @@ export default function FAQ() {
         <Text className="mb-6 text-3xl font-bold">
           Frequently Asked Questions
         </Text>
-        {faqData.map((item, index) => (
+        {faqDataWithVerification.map((item, index) => (
           <FAQItem key={index} question={item.question} answer={item.answer} />
         ))}
       </ScrollView>

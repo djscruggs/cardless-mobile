@@ -11,7 +11,7 @@ import {
 } from '@/components/ui';
 import { useIsFirstTime } from '@/lib/hooks';
 export default function Onboarding() {
-  const [_isFirstTime, setIsFirstTime] = useIsFirstTime();
+  const [, setIsFirstTime] = useIsFirstTime();
   const router = useRouter();
   return (
     <View className="flex h-full items-center  justify-center">
@@ -20,32 +20,29 @@ export default function Onboarding() {
         <Cover />
       </View>
       <View className="justify-end ">
-        <Text className="my-3 text-center text-5xl font-bold">
-          Obytes Starter
-        </Text>
+        <Text className="my-3 text-center text-5xl font-bold">Cardless ID</Text>
         <Text className="mb-2 text-center text-lg text-gray-600">
-          The right way to build your mobile app
+          Your private digital identity
         </Text>
 
         <Text className="my-1 pt-6 text-left text-lg">
-          🚀 Production-ready{' '}
+          🔒 Privacy-first identity verification
         </Text>
         <Text className="my-1 text-left text-lg">
-          🥷 Developer experience + Productivity
+          ✓ No personal data shared with websites
         </Text>
         <Text className="my-1 text-left text-lg">
-          🧩 Minimal code and dependencies
+          📱 Simple QR code verification
         </Text>
-        <Text className="my-1 text-left text-lg">
-          💪 well maintained third-party libraries
-        </Text>
+        <Text className="my-1 text-left text-lg">🎫 No database</Text>
+        <Text className="my-1 text-left text-lg">🛡️ Impossible to hack</Text>
       </View>
       <SafeAreaView className="mt-6">
         <Button
           label="Let's Get Started "
           onPress={() => {
             setIsFirstTime(false);
-            router.replace('/login');
+            router.replace('/(app)');
           }}
         />
       </SafeAreaView>

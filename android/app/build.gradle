@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.obytes.development'
+    namespace 'com.cardlessid.development'
     defaultConfig {
-        applicationId 'com.obytes.development'
+        applicationId 'com.cardlessid.development'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

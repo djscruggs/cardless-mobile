@@ -55,6 +55,10 @@ export default function MyID() {
     setDuplicateDetection(null);
   };
 
+  const handleViewOnboarding = () => {
+    router.push('/onboarding');
+  };
+
   const handleViewRawJSON = () => {
     setShowJSONModal(true);
   };
@@ -243,6 +247,12 @@ export default function MyID() {
                       onPress={handleClearCredential}
                       testID="clear-credential-button"
                     />
+                    <Button
+                      label="View Onboarding"
+                      variant="outline"
+                      onPress={handleViewOnboarding}
+                      testID="view-onboarding-button"
+                    />
                   </View>
                 )}
               </>
@@ -250,10 +260,10 @@ export default function MyID() {
               <>
                 <View className="my-8 items-center justify-center rounded-lg border border-dashed border-gray-400 bg-gray-100 p-8 dark:border-gray-600 dark:bg-gray-700">
                   <Text className="text-center text-gray-500 dark:text-gray-400">
-                    No Credential
+                    No ID Installed
                   </Text>
-                  <Text className="mt-2 text-center text-sm text-gray-400 dark:text-gray-500">
-                    Create your identity to get started
+                  <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-100">
+                    Click Verify Identitiy to get started
                   </Text>
                 </View>
                 <View className="mt-6 space-y-3">

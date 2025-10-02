@@ -32,10 +32,7 @@ export default function TabLayout() {
   useSplashScreen(status);
 
   if (isFirstTime) {
-    return <Redirect href="/onboarding" />;
-  }
-  if (status === 'signOut') {
-    return <Redirect href="/login" />;
+    return <Redirect href="/(app)/info" />;
   }
   return (
     <Tabs>
@@ -66,6 +63,20 @@ export default function TabLayout() {
             <Ionicons name="help-circle" size={24} color={color} />
           ),
           tabBarButtonTestID: 'faq-tab',
+        }}
+      />
+      <Tabs.Screen
+        name="info"
+        options={{
+          title: 'Info',
+          tabBarIcon: ({ color }) => (
+            <Ionicons
+              name="information-circle-outline"
+              size={24}
+              color={color}
+            />
+          ),
+          tabBarButtonTestID: 'info-tab',
         }}
       />
       <Tabs.Screen name="settings" options={{ href: null }} />
