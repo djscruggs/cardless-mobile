@@ -1,6 +1,7 @@
 export type IdType = 'passport' | 'government_id';
 
-export type CredentialRequest = {
+// Direct credential request (original flow - for development/testing)
+export type DirectCredentialRequest = {
   walletAddress: string;
   firstName: string;
   middleName?: string;
@@ -10,6 +11,17 @@ export type CredentialRequest = {
   idType: IdType;
   state: string; // US state code
 };
+
+// Verification-based credential request (new flow)
+export type VerificationCredentialRequest = {
+  verificationSessionId: string;
+  walletAddress: string;
+};
+
+// Union type for credential requests
+export type CredentialRequest =
+  | DirectCredentialRequest
+  | VerificationCredentialRequest;
 
 export type PersonalData = {
   firstName: string;

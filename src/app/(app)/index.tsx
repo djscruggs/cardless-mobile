@@ -43,6 +43,10 @@ export default function MyID() {
     router.push('/(app)/create-identity');
   };
 
+  const handleVerifyIdentity = () => {
+    router.push('/(app)/verify-identity');
+  };
+
   const handleClearCredential = async () => {
     await credentialStorage.clearCredential();
     setCredential(null);
@@ -252,9 +256,15 @@ export default function MyID() {
                     Create your identity to get started
                   </Text>
                 </View>
-                <View className="mt-6">
+                <View className="mt-6 space-y-3">
                   <Button
-                    label="Create Identity"
+                    label="Verify Identity"
+                    onPress={handleVerifyIdentity}
+                    testID="verify-identity-button"
+                  />
+                  <Button
+                    label="Create Identity (Dev)"
+                    variant="secondary"
                     onPress={handleCreateIdentity}
                     testID="create-identity-button"
                   />
