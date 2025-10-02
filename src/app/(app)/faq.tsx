@@ -56,22 +56,24 @@ export default function FAQ() {
     setIsVerified(credential !== null);
   }, []);
 
-  const getVerificationAnswer = () => {
-    if (isVerified) {
-      return 'You are already verified.';
-    }
-    return 'Tap the Cardless ID icon in the lower left corner.';
-  };
+  const faqDataWithVerification = React.useMemo(() => {
+    const getVerificationAnswer = () => {
+      if (isVerified) {
+        return 'You are already verified.';
+      }
+      return 'Tap the Cardless ID icon in the lower left corner.';
+    };
 
-  const faqDataWithVerification = faqData.map((item) => {
-    if (item.question === 'How do I get verified?') {
-      return {
-        ...item,
-        answer: getVerificationAnswer(),
-      };
-    }
-    return item;
-  });
+    return faqData.map((item) => {
+      if (item.question === 'How do I get verified?') {
+        return {
+          ...item,
+          answer: getVerificationAnswer(),
+        };
+      }
+      return item;
+    });
+  }, [isVerified]);
 
   return (
     <View className="flex-1">

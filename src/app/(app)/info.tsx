@@ -9,12 +9,18 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { useIsFirstTime } from '@/lib/hooks';
+import { credentialStorage, useIsFirstTime } from '@/lib';
 export default function Onboarding() {
   const [, setIsFirstTime] = useIsFirstTime();
   const router = useRouter();
+  const [hasCredential, setHasCredential] = React.useState(false);
+
+  React.useEffect(() => {
+    const credential = credentialStorage.getCredential();
+    setHasCredential(credential !== null);
+  }, []);
   return (
-    <View className="flex h-full items-center  justify-center">
+    <View className="flex h-full items-center  justify-center pb-6">
       <FocusAwareStatusBar />
       <View className="w-full flex-1">
         <Cover />
@@ -34,18 +40,20 @@ export default function Onboarding() {
         <Text className="my-1 text-left text-lg">
           📱 Simple QR code verification
         </Text>
-        <Text className="my-1 text-left text-lg">🎫 No database</Text>
+        <Text className="my-1 text-left text-lg">🚫 No database</Text>
         <Text className="my-1 text-left text-lg">🛡️ Impossible to hack</Text>
       </View>
-      <SafeAreaView className="mt-6">
-        <Button
-          label="Let's Get Started "
-          onPress={() => {
-            setIsFirstTime(false);
-            router.replace('/(app)');
-          }}
-        />
-      </SafeAreaView>
+      {!hasCredential && (
+        <SafeAreaView className="mt-6">
+          <Button
+            label="Let's Get Started "
+            onPress={() => {
+              setIsFirstTime(false);
+              router.replace('/(app)');
+            }}
+          />
+        </SafeAreaView>
+      )}
     </View>
   );
 }

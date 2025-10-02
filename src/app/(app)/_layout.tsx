@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Redirect, SplashScreen, Tabs } from 'expo-router';
+import { SplashScreen, Tabs } from 'expo-router';
 import React, { useCallback, useEffect } from 'react';
 import { Image } from 'react-native';
 
@@ -31,11 +31,8 @@ export default function TabLayout() {
   const [isFirstTime] = useIsFirstTime();
   useSplashScreen(status);
 
-  if (isFirstTime) {
-    return <Redirect href="/(app)/info" />;
-  }
   return (
-    <Tabs>
+    <Tabs initialRouteName={isFirstTime ? 'info' : 'index'}>
       <Tabs.Screen
         name="index"
         options={{
