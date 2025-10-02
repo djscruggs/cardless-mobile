@@ -1,10 +1,21 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Stack, useRouter } from 'expo-router';
 import * as React from 'react';
+import { useForm } from 'react-hook-form';
 import { showMessage } from 'react-native-flash-message';
+import { z } from 'zod';
 
-import { useCheckStatus, useIssueCredential, useStartSession } from '@/api';
+import {
+  type IdentityData,
+  useCheckStatus,
+  useIssueCredential,
+  useMockVerify,
+  useStartSession,
+} from '@/api';
 import {
   Button,
+  ControlledInput,
+  ControlledSelect,
   FocusAwareStatusBar,
   ScrollView,
   showErrorMessage,
@@ -13,9 +24,39 @@ import {
 } from '@/components/ui';
 import { credentialStorage } from '@/lib';
 
+const US_STATES = [
+  { label: 'California', value: 'CA' },
+  { label: 'New York', value: 'NY' },
+  { label: 'Texas', value: 'TX' },
+  { label: 'Florida', value: 'FL' },
+  // Add more as needed
+];
+
+const ID_TYPES = [
+  { label: 'Government ID', value: 'government_id' },
+  { label: 'Passport', value: 'passport' },
+];
+
+const schema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, 'Last name is required'),
+  birthDate: z
+    .string()
+    .regex(/^\d{2}-\d{2}-\d{4}$/, 'Date must be in MM-DD-YYYY format'),
+  governmentId: z.string().min(1, 'Government ID is required'),
+  idType: z.enum(['passport', 'government_id'], {
+    required_error: 'Please select an ID type',
+  }),
+  state: z.string().min(2, 'Please select a state'),
+});
+
+type FormType = z.infer<typeof schema>;
+
 type VerificationStep =
-  | 'start'
-  | 'sdk-running'
+  | 'form'
+  | 'starting'
+  | 'verifying'
   | 'polling'
   | 'approved'
   | 'rejected'
@@ -25,20 +66,24 @@ type VerificationStep =
 /* eslint-disable max-lines-per-function */
 export default function VerifyIdentity() {
   const router = useRouter();
-  const [step, setStep] = React.useState<VerificationStep>('start');
+  const [step, setStep] = React.useState<VerificationStep>('form');
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [pollingAttempts, setPollingAttempts] = React.useState(0);
 
+  const { control, handleSubmit } = useForm<FormType>({
+    resolver: zodResolver(schema),
+  });
+
   const { mutate: startSession, isPending: isStarting } = useStartSession();
+  const { mutate: mockVerify, isPending: isVerifying } = useMockVerify();
   const { mutate: issueCredential, isPending: isIssuing } =
     useIssueCredential();
   const { refetch: checkStatus } = useCheckStatus({
     variables: { sessionId: sessionId || '' },
-    enabled: false, // Manual polling only
+    enabled: false,
   });
 
-  // Polling configuration
-  const maxPollingAttempts = 90; // 3 minutes with 2s intervals
+  const maxPollingAttempts = 90;
   const pollingIntervalMs = 2000;
 
   // Polling effect
@@ -79,7 +124,6 @@ export default function VerifyIdentity() {
           return;
         }
 
-        // Still pending, continue polling
         setPollingAttempts((prev) => prev + 1);
       } catch (error) {
         console.error('❌ Error checking status:', error);
@@ -87,7 +131,6 @@ export default function VerifyIdentity() {
       }
     };
 
-    // Check if we've exceeded max attempts
     if (pollingAttempts >= maxPollingAttempts) {
       console.log('⏰ Polling timeout - max attempts reached');
       setStep('expired');
@@ -95,28 +138,61 @@ export default function VerifyIdentity() {
       return;
     }
 
-    // Start polling
     const timeoutId = setTimeout(pollStatus, pollingIntervalMs);
 
     return () => clearTimeout(timeoutId);
   }, [step, sessionId, pollingAttempts, checkStatus, maxPollingAttempts]);
 
-  const handleStartVerification = () => {
+  const onSubmit = (data: FormType) => {
     console.log('🚀 Starting verification session...');
+    setStep('starting');
+
+    // Convert MM-DD-YYYY to YYYY-MM-DD for API
+    const [month, day, year] = data.birthDate.split('-');
+    const isoDate = `${year}-${month}-${day}`;
+
+    const identityData: IdentityData = {
+      ...data,
+      birthDate: isoDate,
+    };
+
+    // STEP 1: Start session on main server
     startSession(
       { provider: 'mock' },
       {
         onSuccess: (response) => {
           console.log('✅ Session started:', response);
           setSessionId(response.sessionId);
-          setStep('sdk-running');
+          setStep('verifying');
 
-          // Simulate mock SDK completion (in real app, this would launch actual SDK)
-          // For mock provider, we immediately move to polling
-          setTimeout(() => {
-            console.log('📱 Mock SDK "completed"');
-            setStep('polling');
-          }, 2000);
+          // STEP 2: Call mock provider /verify endpoint
+          mockVerify(
+            {
+              authToken: response.authToken,
+              providerSessionId: response.providerSessionId,
+              identityData,
+              approved: true, // Can be set to false to test rejection
+            },
+            {
+              onSuccess: () => {
+                console.log('✅ Verification submitted to mock provider');
+                console.log('⏳ Waiting for manual approval on provider...');
+                setStep('polling');
+              },
+              onError: (error) => {
+                console.error('❌ Error calling mock provider:', error);
+                const responseData = error.response?.data as
+                  | { error?: string; message?: string }
+                  | undefined;
+                const errorMessage =
+                  responseData?.error ||
+                  responseData?.message ||
+                  'Failed to submit verification';
+                showErrorMessage(errorMessage);
+                setStep('form');
+              },
+            }
+          );
         },
         onError: (error) => {
           console.error('❌ Error starting session:', error);
@@ -128,6 +204,7 @@ export default function VerifyIdentity() {
             responseData?.message ||
             'Failed to start verification';
           showErrorMessage(errorMessage);
+          setStep('form');
         },
       }
     );
@@ -142,7 +219,6 @@ export default function VerifyIdentity() {
     console.log('📝 Issuing credential for session:', sessionId);
     setStep('issuing');
 
-    // TODO: Get actual wallet address
     const walletAddress =
       '55MFIU3EEXNLAE3KWVVC2FWKOWPTIMMFAJAY4TONNIFRZZYETL2IL3QRCE';
 
@@ -171,20 +247,28 @@ export default function VerifyIdentity() {
             responseData?.message ||
             'Failed to issue credential';
           showErrorMessage(errorMessage);
-          setStep('approved'); // Go back to approved state so user can retry
+          setStep('approved');
         },
       }
     );
   };
 
+  const handleReset = () => {
+    setStep('form');
+    setSessionId(null);
+    setPollingAttempts(0);
+  };
+
   const getStepMessage = () => {
     switch (step) {
-      case 'start':
-        return 'Ready to start verification';
-      case 'sdk-running':
-        return 'Opening verification SDK...';
+      case 'form':
+        return 'Enter your identity information';
+      case 'starting':
+        return 'Starting verification session...';
+      case 'verifying':
+        return 'Submitting to verification provider...';
       case 'polling':
-        return `Checking verification status... (${pollingAttempts}/${maxPollingAttempts})`;
+        return `Waiting for approval... (${pollingAttempts}/${maxPollingAttempts})`;
       case 'approved':
         return 'Verification approved! Ready to issue credential.';
       case 'rejected':
@@ -206,13 +290,16 @@ export default function VerifyIdentity() {
       case 'expired':
         return 'text-red-600 dark:text-red-400';
       case 'polling':
-      case 'sdk-running':
+      case 'starting':
+      case 'verifying':
       case 'issuing':
         return 'text-blue-600 dark:text-blue-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
     }
   };
+
+  const isLoading = isStarting || isVerifying || isIssuing;
 
   return (
     <>
@@ -224,57 +311,98 @@ export default function VerifyIdentity() {
       />
       <FocusAwareStatusBar />
       <ScrollView>
-        <View className="flex-1 items-center p-4">
-          <View className="w-full max-w-md space-y-6">
-            <View className="rounded-lg border-2 border-gray-300 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
-                Identity Verification
+        <View className="flex-1 p-4">
+          <View className="rounded-lg border-2 border-gray-300 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
+            <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
+              Identity Verification
+            </Text>
+
+            <View className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
+              <Text className={`text-center font-medium ${getStepColor()}`}>
+                {getStepMessage()}
               </Text>
+            </View>
 
-              <View className="mb-6 rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                <Text className={`text-center font-medium ${getStepColor()}`}>
-                  {getStepMessage()}
-                </Text>
-              </View>
-
-              {step === 'start' && (
+            {step === 'form' && (
+              <>
+                <ControlledInput
+                  name="firstName"
+                  label="First Name"
+                  control={control}
+                  testID="firstName"
+                />
+                <ControlledInput
+                  name="middleName"
+                  label="Middle Name (Optional)"
+                  control={control}
+                  testID="middleName"
+                />
+                <ControlledInput
+                  name="lastName"
+                  label="Last Name"
+                  control={control}
+                  testID="lastName"
+                />
+                <ControlledInput
+                  name="birthDate"
+                  label="Birth Date (MM-DD-YYYY)"
+                  control={control}
+                  placeholder="01-31-1990"
+                  testID="birthDate"
+                />
+                <ControlledSelect
+                  name="idType"
+                  label="ID Type"
+                  control={control}
+                  options={ID_TYPES}
+                  testID="idType"
+                />
+                <ControlledInput
+                  name="governmentId"
+                  label="Government ID Number"
+                  control={control}
+                  testID="governmentId"
+                />
+                <ControlledSelect
+                  name="state"
+                  label="State"
+                  control={control}
+                  options={US_STATES}
+                  testID="state"
+                />
                 <Button
                   label="Start Verification"
-                  loading={isStarting}
-                  onPress={handleStartVerification}
+                  loading={isLoading}
+                  onPress={handleSubmit(onSubmit)}
                   testID="start-verification-button"
                 />
-              )}
+              </>
+            )}
 
-              {step === 'approved' && (
-                <Button
-                  label="Issue Credential"
-                  loading={isIssuing}
-                  onPress={handleIssueCredential}
-                  testID="issue-credential-button"
-                />
-              )}
+            {step === 'approved' && (
+              <Button
+                label="Issue Credential"
+                loading={isIssuing}
+                onPress={handleIssueCredential}
+                testID="issue-credential-button"
+              />
+            )}
 
-              {(step === 'rejected' || step === 'expired') && (
-                <Button
-                  label="Try Again"
-                  onPress={() => {
-                    setStep('start');
-                    setSessionId(null);
-                    setPollingAttempts(0);
-                  }}
-                  testID="retry-button"
-                />
-              )}
+            {(step === 'rejected' || step === 'expired') && (
+              <Button
+                label="Try Again"
+                onPress={handleReset}
+                testID="retry-button"
+              />
+            )}
 
-              {sessionId && (
-                <View className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                  <Text className="text-center text-xs text-gray-500 dark:text-gray-400">
-                    Session ID: {sessionId}
-                  </Text>
-                </View>
-              )}
-            </View>
+            {sessionId && (
+              <View className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
+                <Text className="text-center text-xs text-gray-500 dark:text-gray-400">
+                  Session ID: {sessionId}
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </ScrollView>
