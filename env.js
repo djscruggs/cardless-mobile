@@ -21,8 +21,15 @@ const APP_ENV = process.env.APP_ENV ?? 'development';
 // eslint-disable-next-line no-undef
 const envPath = path.resolve(__dirname, `.env.${APP_ENV}`);
 
+// Check if .env.local exists first, then fall back to environment-specific file
+// eslint-disable-next-line no-undef
+const localEnvPath = path.resolve(__dirname, '.env.local');
+const fs = require('fs');
+
+const finalEnvPath = fs.existsSync(localEnvPath) ? localEnvPath : envPath;
+
 require('dotenv').config({
-  path: envPath,
+  path: finalEnvPath,
 });
 
 /**
