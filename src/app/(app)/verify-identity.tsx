@@ -105,7 +105,7 @@ export default function VerifyIdentity() {
         message: 'Identity verified and credential issued!',
         type: 'success',
       });
-      router.back();
+      router.push('/');
     },
     onError: (error) => {
       console.error('❌ NFT workflow error:', error);
@@ -409,7 +409,7 @@ export default function VerifyIdentity() {
               message: 'Identity verified and credential issued!',
               type: 'success',
             });
-            router.back();
+            router.push('/');
           }
         },
         onError: (error) => {
