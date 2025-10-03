@@ -9,12 +9,14 @@ CardlessID uses **non-transferable NFTs** (also called "soulbound tokens") on th
 **The NFT is for verification purposes only. The client workflow barely changes.**
 
 **What stays the same**:
+
 - ✅ Client stores W3C Verifiable Credential + personal data locally (encrypted)
 - ✅ Client performs age verification calculations locally
 - ✅ Client only shares true/false responses (NEVER actual birth date)
 - ✅ Privacy model is identical
 
 **What changes**:
+
 - 📦 Client receives `assetId` instead of `transactionId` (just a different number)
 - 📦 Client must opt-in to the NFT (one extra transaction)
 - 📦 Verifiers check asset ownership instead of searching transactions (backend change only)
@@ -24,6 +26,7 @@ CardlessID uses **non-transferable NFTs** (also called "soulbound tokens") on th
 ## Architecture
 
 ### Credential Storage
+
 - **Blockchain**: Credentials are issued as Algorand Standard Assets (ASAs/NFTs)
 - **Non-transferable**: Each NFT is frozen after issuance to prevent transfers
 - **Minimal Disclosure**: NO age/birth information stored on-chain (privacy best practice)
@@ -31,6 +34,7 @@ CardlessID uses **non-transferable NFTs** (also called "soulbound tokens") on th
 - **Revocable**: Issuer maintains clawback rights to revoke credentials if needed
 
 ### Why NFTs?
+
 1. **Easy verification**: Simple asset ownership check via Algorand Indexer API
 2. **Standard queries**: Use Algorand's native asset APIs
 3. **Built-in uniqueness**: Each NFT has a unique asset ID
@@ -40,6 +44,7 @@ CardlessID uses **non-transferable NFTs** (also called "soulbound tokens") on th
 ## API Endpoints
 
 ### Base URL
+
 - **Testnet**: `https://your-domain.com/api`
 - **Mainnet**: `https://your-domain.com/api`
 
@@ -54,6 +59,7 @@ After identity verification is complete, request a credential to be minted.
 **Endpoint**: `POST /api/credentials`
 
 **Request Body**:
+
 ```json
 {
   "verificationSessionId": "session_xxx",
@@ -62,6 +68,7 @@ After identity verification is complete, request a credential to be minted.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -114,6 +121,7 @@ Before the NFT can be transferred to your wallet, you must opt-in to the asset.
 **Client Action**: Submit an asset transfer transaction of 0 units to yourself.
 
 **Using algosdk**:
+
 ```typescript
 import algosdk from 'algosdk';
 
@@ -150,6 +158,8 @@ async function optInToAsset(
 
 **Cost**: 0.001 ALGO transaction fee + 0.1 ALGO minimum balance increase (locked while you hold the asset)
 
+**Note**: The CardlessID server automatically funds new wallets with sufficient ALGO when a verification is approved. This happens on both testnet and mainnet, ensuring users can complete the opt-in transaction without any manual wallet management. The wallet functionality is completely hidden from end users for the best user experience.
+
 ---
 
 ### Step 3: Request NFT Transfer
@@ -159,6 +169,7 @@ After opting in, call the transfer endpoint to receive the NFT.
 **Endpoint**: `POST /api/credentials/transfer`
 
 **Request Body**:
+
 ```json
 {
   "assetId": 123456789,
@@ -167,6 +178,7 @@ After opting in, call the transfer endpoint to receive the NFT.
 ```
 
 **Response**:
+
 ```json
 {
   "success": true,
@@ -187,6 +199,7 @@ After opting in, call the transfer endpoint to receive the NFT.
 ```
 
 After this step:
+
 - The NFT is in your wallet
 - The NFT is **frozen** (cannot be transferred)
 - You now hold a verifiable credential
@@ -202,6 +215,7 @@ Any party can check if a wallet has valid credentials.
 **Endpoint**: `GET /api/wallet/status/{walletAddress}`
 
 **Response**:
+
 ```json
 {
   "verified": true,
@@ -235,6 +249,7 @@ For **privacy-preserving age verification** (e.g., "Are you 21+?"), the client s
 4. **Optionally provide cryptographic proof** using the stored credential proof
 
 **Example Flow**:
+
 ```typescript
 interface StoredCredential {
   credential: any; // W3C VC with proof
@@ -258,9 +273,8 @@ function checkAgeRequirement(
   const monthDiff = today.getMonth() - birthDate.getMonth();
   const dayDiff = today.getDate() - birthDate.getDate();
 
-  const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)
-    ? age - 1
-    : age;
+  const actualAge =
+    monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
 
   return actualAge >= minimumAge;
 }
@@ -281,14 +295,14 @@ interface WalletCredentialStorage {
   credentials: Array<{
     // W3C Verifiable Credential (for cryptographic proof)
     credential: {
-      "@context": string[];
+      '@context': string[];
       id: string;
       type: string[];
       issuer: { id: string };
       issuanceDate: string;
       credentialSubject: {
         id: string;
-        "cardlessid:compositeHash": string;
+        'cardlessid:compositeHash': string;
       };
       proof: {
         type: string;
@@ -313,7 +327,7 @@ interface WalletCredentialStorage {
     // NFT information
     nft: {
       assetId: number;
-      network: "testnet" | "mainnet";
+      network: 'testnet' | 'mainnet';
       frozen: boolean;
       issuedAt: string;
     };
@@ -322,6 +336,7 @@ interface WalletCredentialStorage {
 ```
 
 **Security Notes**:
+
 - Encrypt personal data at rest
 - Never transmit birth date or full personal data
 - Only share: wallet address + true/false age verification result
@@ -348,9 +363,7 @@ async function getWalletCredentials(
   walletAddress: string,
   issuerAddress: string
 ): Promise<Array<{ assetId: number; frozen: boolean }>> {
-  const accountInfo = await indexerClient
-    .lookupAccountByID(walletAddress)
-    .do();
+  const accountInfo = await indexerClient.lookupAccountByID(walletAddress).do();
 
   const credentials = [];
 
@@ -384,6 +397,7 @@ async function getWalletCredentials(
 When a verifier (e.g., age-restricted website) needs to verify age:
 
 1. **Verifier creates QR code** with verification request:
+
    ```json
    {
      "type": "age-verification",
@@ -401,6 +415,7 @@ When a verifier (e.g., age-restricted website) needs to verify age:
    - Generate response (true/false only)
 
 4. **Wallet submits response** to callback URL:
+
    ```json
    {
      "sessionId": "session_xxx",
@@ -423,13 +438,13 @@ When a verifier (e.g., age-restricted website) needs to verify age:
 
 ## Costs Summary
 
-| Action | Cost | Locked Balance | Notes |
-|--------|------|----------------|-------|
-| NFT Creation | 0.001 ALGO | 0.1 ALGO | Paid by issuer |
-| Opt-in | 0.001 ALGO | 0.1 ALGO | Paid by recipient |
-| Transfer | 0.001 ALGO | - | Paid by issuer |
-| Freeze | 0.001 ALGO | - | Paid by issuer |
-| **Total (User)** | **0.001 ALGO** | **0.1 ALGO** | ~$0.03-0.04 USD |
+| Action           | Cost           | Locked Balance | Notes             |
+| ---------------- | -------------- | -------------- | ----------------- |
+| NFT Creation     | 0.001 ALGO     | 0.1 ALGO       | Paid by issuer    |
+| Opt-in           | 0.001 ALGO     | 0.1 ALGO       | Paid by recipient |
+| Transfer         | 0.001 ALGO     | -              | Paid by issuer    |
+| Freeze           | 0.001 ALGO     | -              | Paid by issuer    |
+| **Total (User)** | **0.001 ALGO** | **0.1 ALGO**   | ~$0.03-0.04 USD   |
 
 The 0.1 ALGO locked balance is returned if the user opts out of the asset (but this revokes the credential).
 
@@ -469,6 +484,7 @@ async function revokeCredential(
 ```
 
 After revocation:
+
 - User no longer owns the NFT
 - Verification checks will fail
 - User's locally stored data remains but is invalid
@@ -479,13 +495,15 @@ After revocation:
 
 ### Testnet Setup
 
-1. **Get testnet ALGO**: https://bank.testnet.algorand.network/
-2. **Set environment variable**: `VITE_ALGORAND_NETWORK=testnet`
-3. **View transactions**: https://testnet.explorer.perawallet.app/
+1. **Automatic funding**: The CardlessID server automatically funds new wallets when a verification is approved (both testnet and mainnet). No manual wallet management required.
+2. **Manual funding (optional for development)**: You can also get testnet ALGO manually from https://bank.testnet.algorand.network/ if needed for testing
+3. **Set environment variable**: `VITE_ALGORAND_NETWORK=testnet`
+4. **View transactions**: https://testnet.explorer.perawallet.app/
 
 ### Sample Testnet Credentials
 
 For testing, you can check these example credentials:
+
 - **Issuer Address**: Check `VITE_APP_WALLET_ADDRESS` in your environment
 - **Test Wallet**: Create a wallet and fund with testnet ALGO
 - **Asset ID**: Retrieved from credential issuance response
@@ -495,6 +513,7 @@ For testing, you can check these example credentials:
 ## Security Best Practices
 
 ### For Wallet Apps
+
 1. **Encrypt credentials** at rest using device keychain/keystore
 2. **Never expose birth date** - only return true/false age checks
 3. **Verify issuer** before trusting credentials
@@ -502,6 +521,7 @@ For testing, you can check these example credentials:
 5. **Implement PIN/biometric** protection for credential access
 
 ### For Verifiers
+
 1. **Always check blockchain** - don't trust client claims without verification
 2. **Verify issuer address** matches trusted CardlessID issuer
 3. **Check NFT is frozen** to ensure it's non-transferable
@@ -514,19 +534,20 @@ For testing, you can check these example credentials:
 
 ### Common Errors
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| "Asset not opted in" | User hasn't opted in to NFT | Complete Step 2 (opt-in) |
-| "Account does not exist" | Wallet has 0 ALGO | Fund wallet with minimum 0.1 ALGO |
-| "Asset frozen" | Trying to transfer frozen NFT | This is expected - NFTs are non-transferable |
-| "Invalid address format" | Malformed Algorand address | Validate address format (58 chars, base32) |
-| "Insufficient balance" | Not enough ALGO for fees | Ensure wallet has at least 0.2 ALGO |
+| Error                    | Cause                         | Solution                                                           |
+| ------------------------ | ----------------------------- | ------------------------------------------------------------------ |
+| "Asset not opted in"     | User hasn't opted in to NFT   | Complete Step 2 (opt-in)                                           |
+| "Account does not exist" | Wallet has 0 ALGO             | Server auto-funds on credential issuance; verify funding completed |
+| "Asset frozen"           | Trying to transfer frozen NFT | This is expected - NFTs are non-transferable                       |
+| "Invalid address format" | Malformed Algorand address    | Validate address format (58 chars, base32)                         |
+| "Insufficient balance"   | Not enough ALGO for fees      | Server auto-funds; wait for funding transaction to complete        |
 
 ---
 
 ## Support
 
 For questions or issues:
+
 - **Documentation**: https://github.com/your-org/cardlessid
 - **Issues**: https://github.com/your-org/cardlessid/issues
 - **API Status**: Check `/api/hello` endpoint
