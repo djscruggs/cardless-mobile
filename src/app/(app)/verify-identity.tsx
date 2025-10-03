@@ -22,13 +22,13 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { Env } from '@/lib/env';
 import {
   credentialStorage,
   initializeWallet,
   useNFTWorkflow,
   wallet,
 } from '@/lib';
+import { Env } from '@/lib/env';
 
 const US_STATES = [
   { label: 'California', value: 'CA' },
@@ -121,10 +121,17 @@ export default function VerifyIdentity() {
       console.log('🔍 DEV_WALLET_ADDRESS:', Env.DEV_WALLET_ADDRESS);
 
       // In development, use DEV_WALLET_ADDRESS if available
-      if (Env.APP_ENV === 'development' && Env.DEV_WALLET_ADDRESS && Env.DEV_WALLET_MNEMONIC) {
+      if (
+        Env.APP_ENV === 'development' &&
+        Env.DEV_WALLET_ADDRESS &&
+        Env.DEV_WALLET_MNEMONIC
+      ) {
         console.log('🔐 Using development wallet from env');
         // Save dev wallet to storage so getWalletPrivateKey() works
-        await wallet.saveWallet(Env.DEV_WALLET_ADDRESS, Env.DEV_WALLET_MNEMONIC);
+        await wallet.saveWallet(
+          Env.DEV_WALLET_ADDRESS,
+          Env.DEV_WALLET_MNEMONIC
+        );
         setWalletAddress(Env.DEV_WALLET_ADDRESS);
         console.log('✅ Wallet set to:', Env.DEV_WALLET_ADDRESS);
       } else {
@@ -140,7 +147,7 @@ export default function VerifyIdentity() {
   }, []);
 
   // Start NFT workflow when nftData is set and step is nft-workflow
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-compiler/react-compiler
+
   React.useEffect(() => {
     if (step === 'nft-workflow' && nftData?.assetId) {
       console.log('🚀 Starting NFT workflow with assetId:', nftData.assetId);
@@ -203,7 +210,7 @@ export default function VerifyIdentity() {
   }, [loadDummyData]);
 
   // Polling effect
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-compiler/react-compiler
+
   React.useEffect(() => {
     if (step !== 'polling' || !sessionId) return;
 
@@ -225,7 +232,12 @@ export default function VerifyIdentity() {
 
         if (status === 'approved' && result.data.ready) {
           console.log('✅ Verification approved!');
-          console.log('🔍 Debug - sessionId:', sessionId, 'walletAddress:', walletAddress);
+          console.log(
+            '🔍 Debug - sessionId:',
+            sessionId,
+            'walletAddress:',
+            walletAddress
+          );
           showMessage({
             message: 'Verification approved! Installing...',
             type: 'success',
@@ -233,7 +245,9 @@ export default function VerifyIdentity() {
           setStep('approved');
           // Automatically trigger credential issuance
           setTimeout(() => {
-            console.log('⏰ Timeout triggered, calling handleIssueCredential...');
+            console.log(
+              '⏰ Timeout triggered, calling handleIssueCredential...'
+            );
             handleIssueCredential();
           }, 500); // Small delay to show success message
           return;
@@ -369,12 +383,17 @@ export default function VerifyIdentity() {
           // Check if NFT workflow is required
           if (response.nft && response.nft.requiresOptIn) {
             console.log('🔵 NFT requires opt-in, starting workflow...');
-            console.log('🔍 Raw assetId from API:', response.nft.assetId, typeof response.nft.assetId);
+            console.log(
+              '🔍 Raw assetId from API:',
+              response.nft.assetId,
+              typeof response.nft.assetId
+            );
 
             // Convert assetId to number if it's a string
-            const assetId = typeof response.nft.assetId === 'string'
-              ? parseInt(response.nft.assetId, 10)
-              : response.nft.assetId;
+            const assetId =
+              typeof response.nft.assetId === 'string'
+                ? parseInt(response.nft.assetId, 10)
+                : response.nft.assetId;
 
             console.log('🔍 Converted assetId:', assetId, typeof assetId);
 
@@ -435,11 +454,11 @@ export default function VerifyIdentity() {
         return 'Issuing credential...';
       case 'nft-workflow':
         if (nftWorkflow.state === 'opting-in') {
-          return 'Opting in to NFT credential...';
+          return 'Finalizing...';
         } else if (nftWorkflow.state === 'transferring') {
-          return 'Transferring NFT credential...';
+          return 'Transferring...';
         } else if (nftWorkflow.state === 'complete') {
-          return 'NFT credential received!';
+          return 'Received!';
         } else if (nftWorkflow.state === 'error') {
           return 'Error with NFT workflow. Please retry.';
         }

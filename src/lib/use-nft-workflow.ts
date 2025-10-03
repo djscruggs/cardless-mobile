@@ -8,7 +8,12 @@ import { showErrorMessage } from '@/components/ui/utils';
 import { optInToAsset } from './algorand';
 import { credentialStorage } from './credential-storage';
 
-type NFTWorkflowState = 'idle' | 'opting-in' | 'transferring' | 'complete' | 'error';
+type NFTWorkflowState =
+  | 'idle'
+  | 'opting-in'
+  | 'transferring'
+  | 'complete'
+  | 'error';
 
 interface UseNFTWorkflowOptions {
   assetId?: number;
@@ -52,7 +57,7 @@ export function useNFTWorkflow({
       // Step 1: Opt-in to the asset
       setState('opting-in');
       showMessage({
-        message: 'Opting in to NFT asset...',
+        message: 'Transfer in progress...',
         type: 'info',
       });
 
