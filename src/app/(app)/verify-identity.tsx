@@ -22,7 +22,13 @@ import {
   Text,
   View,
 } from '@/components/ui';
-import { credentialStorage } from '@/lib';
+import { Env } from '@/lib/env';
+import {
+  credentialStorage,
+  initializeWallet,
+  useNFTWorkflow,
+  wallet,
+} from '@/lib';
 
 const US_STATES = [
   { label: 'California', value: 'CA' },
@@ -61,7 +67,8 @@ type VerificationStep =
   | 'approved'
   | 'rejected'
   | 'expired'
-  | 'issuing';
+  | 'issuing'
+  | 'nft-workflow';
 
 /* eslint-disable max-lines-per-function */
 export default function VerifyIdentity() {
@@ -70,6 +77,11 @@ export default function VerifyIdentity() {
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [pollingAttempts, setPollingAttempts] = React.useState(0);
   const [isLoadingDummyData, setIsLoadingDummyData] = React.useState(false);
+  const [nftData, setNftData] = React.useState<{
+    assetId: number;
+    requiresOptIn: boolean;
+  } | null>(null);
+  const [walletAddress, setWalletAddress] = React.useState<string | null>(null);
 
   const { control, handleSubmit, setValue } = useForm<FormType>({
     resolver: zodResolver(schema),
@@ -83,6 +95,58 @@ export default function VerifyIdentity() {
     variables: { sessionId: sessionId || '' },
     enabled: false,
   });
+
+  const nftWorkflow = useNFTWorkflow({
+    assetId: nftData?.assetId,
+    walletAddress: walletAddress || '',
+    privateKey: wallet.getWalletPrivateKey() || undefined,
+    onComplete: () => {
+      showMessage({
+        message: 'Identity verified and credential issued!',
+        type: 'success',
+      });
+      router.back();
+    },
+    onError: (error) => {
+      console.error('❌ NFT workflow error:', error);
+      setStep('approved'); // Allow retry
+    },
+  });
+
+  // Initialize wallet on mount
+  React.useEffect(() => {
+    const init = async () => {
+      console.log('🔐 Starting wallet initialization...');
+      console.log('🔍 APP_ENV:', Env.APP_ENV);
+      console.log('🔍 DEV_WALLET_ADDRESS:', Env.DEV_WALLET_ADDRESS);
+
+      // In development, use DEV_WALLET_ADDRESS if available
+      if (Env.APP_ENV === 'development' && Env.DEV_WALLET_ADDRESS && Env.DEV_WALLET_MNEMONIC) {
+        console.log('🔐 Using development wallet from env');
+        // Save dev wallet to storage so getWalletPrivateKey() works
+        await wallet.saveWallet(Env.DEV_WALLET_ADDRESS, Env.DEV_WALLET_MNEMONIC);
+        setWalletAddress(Env.DEV_WALLET_ADDRESS);
+        console.log('✅ Wallet set to:', Env.DEV_WALLET_ADDRESS);
+      } else {
+        // Otherwise, initialize/create wallet
+        console.log('🔐 Generating new wallet...');
+        const address = await initializeWallet();
+        console.log('🔐 Wallet initialized:', address);
+        setWalletAddress(address);
+        console.log('✅ Wallet state updated');
+      }
+    };
+    init();
+  }, []);
+
+  // Start NFT workflow when nftData is set and step is nft-workflow
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-compiler/react-compiler
+  React.useEffect(() => {
+    if (step === 'nft-workflow' && nftData?.assetId) {
+      console.log('🚀 Starting NFT workflow with assetId:', nftData.assetId);
+      nftWorkflow.startWorkflow();
+    }
+  }, [step, nftData?.assetId]);
 
   const maxPollingAttempts = 90;
   const pollingIntervalMs = 2000;
@@ -139,6 +203,7 @@ export default function VerifyIdentity() {
   }, [loadDummyData]);
 
   // Polling effect
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-compiler/react-compiler
   React.useEffect(() => {
     if (step !== 'polling' || !sessionId) return;
 
@@ -160,6 +225,7 @@ export default function VerifyIdentity() {
 
         if (status === 'approved' && result.data.ready) {
           console.log('✅ Verification approved!');
+          console.log('🔍 Debug - sessionId:', sessionId, 'walletAddress:', walletAddress);
           showMessage({
             message: 'Verification approved! Installing...',
             type: 'success',
@@ -167,6 +233,7 @@ export default function VerifyIdentity() {
           setStep('approved');
           // Automatically trigger credential issuance
           setTimeout(() => {
+            console.log('⏰ Timeout triggered, calling handleIssueCredential...');
             handleIssueCredential();
           }, 500); // Small delay to show success message
           return;
@@ -174,6 +241,10 @@ export default function VerifyIdentity() {
 
         if (status === 'rejected') {
           console.log('❌ Verification rejected');
+          showMessage({
+            message: 'Verification was rejected',
+            type: 'danger',
+          });
           setStep('rejected');
           return;
         }
@@ -276,11 +347,14 @@ export default function VerifyIdentity() {
       return;
     }
 
-    console.log('📝 Issuing credential for session:', sessionId);
-    setStep('issuing');
+    if (!walletAddress) {
+      showErrorMessage('No wallet address available');
+      return;
+    }
 
-    const walletAddress =
-      '55MFIU3EEXNLAE3KWVVC2FWKOWPTIMMFAJAY4TONNIFRZZYETL2IL3QRCE';
+    console.log('📝 Issuing credential for session:', sessionId);
+    console.log('🔍 Wallet address at time of issue:', walletAddress);
+    setStep('issuing');
 
     issueCredential(
       {
@@ -291,11 +365,33 @@ export default function VerifyIdentity() {
         onSuccess: async (response) => {
           console.log('✅ Credential issued successfully:', response);
           await credentialStorage.saveCredential(response);
-          showMessage({
-            message: 'Identity verified and credential issued!',
-            type: 'success',
-          });
-          router.back();
+
+          // Check if NFT workflow is required
+          if (response.nft && response.nft.requiresOptIn) {
+            console.log('🔵 NFT requires opt-in, starting workflow...');
+            console.log('🔍 Raw assetId from API:', response.nft.assetId, typeof response.nft.assetId);
+
+            // Convert assetId to number if it's a string
+            const assetId = typeof response.nft.assetId === 'string'
+              ? parseInt(response.nft.assetId, 10)
+              : response.nft.assetId;
+
+            console.log('🔍 Converted assetId:', assetId, typeof assetId);
+
+            setNftData({
+              assetId,
+              requiresOptIn: response.nft.requiresOptIn,
+            });
+            setStep('nft-workflow');
+            // NFT workflow will be started by useEffect when nftData changes
+          } else {
+            // No NFT workflow needed, we're done
+            showMessage({
+              message: 'Identity verified and credential issued!',
+              type: 'success',
+            });
+            router.back();
+          }
         },
         onError: (error) => {
           console.error('❌ Error issuing credential:', error);
@@ -337,6 +433,17 @@ export default function VerifyIdentity() {
         return 'Verification session expired. Please start over.';
       case 'issuing':
         return 'Issuing credential...';
+      case 'nft-workflow':
+        if (nftWorkflow.state === 'opting-in') {
+          return 'Opting in to NFT credential...';
+        } else if (nftWorkflow.state === 'transferring') {
+          return 'Transferring NFT credential...';
+        } else if (nftWorkflow.state === 'complete') {
+          return 'NFT credential received!';
+        } else if (nftWorkflow.state === 'error') {
+          return 'Error with NFT workflow. Please retry.';
+        }
+        return 'Setting up NFT credential...';
       default:
         return '';
     }
@@ -353,6 +460,7 @@ export default function VerifyIdentity() {
       case 'starting':
       case 'verifying':
       case 'issuing':
+      case 'nft-workflow':
         return 'text-blue-600 dark:text-blue-400';
       default:
         return 'text-gray-600 dark:text-gray-400';

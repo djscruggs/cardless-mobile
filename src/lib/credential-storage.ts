@@ -4,6 +4,7 @@ import { getItem, removeItem, setItem } from './storage';
 
 const CREDENTIAL_KEY = 'cardless_credential';
 const PERSONAL_DATA_KEY = 'cardless_personal_data';
+const NFT_KEY = 'cardless_nft';
 const BLOCKCHAIN_KEY = 'cardless_blockchain';
 const DUPLICATE_DETECTION_KEY = 'cardless_duplicate_detection';
 
@@ -14,6 +15,8 @@ export const credentialStorage = {
   getPersonalData: () =>
     getItem<CredentialResponse['personalData']>(PERSONAL_DATA_KEY),
 
+  getNFT: () => getItem<CredentialResponse['nft']>(NFT_KEY),
+
   getBlockchain: () =>
     getItem<CredentialResponse['blockchain']>(BLOCKCHAIN_KEY),
 
@@ -23,6 +26,9 @@ export const credentialStorage = {
   saveCredential: async (response: CredentialResponse) => {
     await setItem(CREDENTIAL_KEY, response.credential);
     await setItem(PERSONAL_DATA_KEY, response.personalData);
+    if (response.nft) {
+      await setItem(NFT_KEY, response.nft);
+    }
     if (response.blockchain) {
       await setItem(BLOCKCHAIN_KEY, response.blockchain);
     }
@@ -31,9 +37,16 @@ export const credentialStorage = {
     }
   },
 
+  updateNFT: async (nft: CredentialResponse['nft']) => {
+    if (nft) {
+      await setItem(NFT_KEY, nft);
+    }
+  },
+
   clearCredential: async () => {
     await removeItem(CREDENTIAL_KEY);
     await removeItem(PERSONAL_DATA_KEY);
+    await removeItem(NFT_KEY);
     await removeItem(BLOCKCHAIN_KEY);
     await removeItem(DUPLICATE_DETECTION_KEY);
   },

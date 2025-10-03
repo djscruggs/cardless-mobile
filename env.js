@@ -81,6 +81,9 @@ const client = z.object({
 
   // ADD YOUR CLIENT ENV VARS HERE
   API_URL: z.string(),
+  ALGORAND_NETWORK: z.enum(['testnet', 'mainnet']).optional(),
+  DEV_WALLET_ADDRESS: z.string().optional(),
+  DEV_WALLET_MNEMONIC: z.string().optional(),
   VAR_NUMBER: z.number(),
   VAR_BOOL: z.boolean(),
 });
@@ -105,6 +108,9 @@ const _clientEnv = {
 
   // ADD YOUR ENV VARS HERE TOO
   API_URL: process.env.API_URL,
+  ALGORAND_NETWORK: process.env.ALGORAND_NETWORK,
+  DEV_WALLET_ADDRESS: process.env.DEV_WALLET_ADDRESS,
+  DEV_WALLET_MNEMONIC: process.env.DEV_WALLET_MNEMONIC,
   VAR_NUMBER: Number(process.env.VAR_NUMBER),
   VAR_BOOL: process.env.VAR_BOOL === 'true',
 };

@@ -15,7 +15,7 @@ import {
   showErrorMessage,
   View,
 } from '@/components/ui';
-import { credentialStorage } from '@/lib';
+import { credentialStorage, initializeWallet } from '@/lib';
 
 const US_STATES = [
   { label: 'Alabama', value: 'AL' },
@@ -94,15 +94,26 @@ type FormType = z.infer<typeof schema>;
 /* eslint-disable max-lines-per-function */
 export default function CreateIdentity() {
   const router = useRouter();
+  const [walletAddress, setWalletAddress] = React.useState<string | null>(null);
   const { control, handleSubmit } = useForm<FormType>({
     resolver: zodResolver(schema),
   });
   const { mutate: issueCredential, isPending } = useIssueCredential();
 
+  // Initialize wallet on mount
+  React.useEffect(() => {
+    const init = async () => {
+      const address = await initializeWallet();
+      setWalletAddress(address);
+    };
+    init();
+  }, []);
+
   const onSubmit = (data: FormType) => {
-    // TODO: Generate or retrieve wallet address
-    const walletAddress =
-      '55MFIU3EEXNLAE3KWVVC2FWKOWPTIMMFAJAY4TONNIFRZZYETL2IL3QRCE';
+    if (!walletAddress) {
+      showErrorMessage('Wallet not initialized');
+      return;
+    }
 
     // Convert MM-DD-YYYY to YYYY-MM-DD for API
     const [month, day, year] = data.birthDate.split('-');
