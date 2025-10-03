@@ -64,12 +64,22 @@ export type VerifiableCredential = {
 export type CredentialResponse = {
   credential: VerifiableCredential;
   personalData: PersonalData;
+  nft?: {
+    assetId: string; // Backend sends as string due to JSON.stringify issues with large numbers
+    requiresOptIn: boolean;
+    instructions?: {
+      step1: string;
+      step2: string;
+      step3: string;
+    };
+  };
   blockchain?: {
     transaction: {
       id: string;
       explorerUrl: string;
-      note: string;
+      note?: string;
     };
+    network?: 'testnet' | 'mainnet';
   };
   duplicateDetection?: {
     duplicateCount: number;
