@@ -160,7 +160,15 @@ export default function VerifyIdentity() {
 
         if (status === 'approved' && result.data.ready) {
           console.log('✅ Verification approved!');
+          showMessage({
+            message: 'Verification approved! Installing...',
+            type: 'success',
+          });
           setStep('approved');
+          // Automatically trigger credential issuance
+          setTimeout(() => {
+            handleIssueCredential();
+          }, 500); // Small delay to show success message
           return;
         }
 
@@ -322,7 +330,7 @@ export default function VerifyIdentity() {
       case 'polling':
         return `Waiting for approval... (${pollingAttempts}/${maxPollingAttempts})`;
       case 'approved':
-        return 'Verification approved! Ready to issue credential.';
+        return 'Verification approved!';
       case 'rejected':
         return 'Verification was rejected. Please try again.';
       case 'expired':
@@ -440,14 +448,7 @@ export default function VerifyIdentity() {
               </>
             )}
 
-            {step === 'approved' && (
-              <Button
-                label="Issue Credential"
-                loading={isIssuing}
-                onPress={handleIssueCredential}
-                testID="issue-credential-button"
-              />
-            )}
+            {/* Approved state automatically triggers credential issuance */}
 
             {(step === 'rejected' || step === 'expired') && (
               <Button
