@@ -34,7 +34,7 @@ This app currently uses a **mock verification server** for testing identity veri
 - Node.js 18+
 - pnpm
 - iOS Simulator (macOS) or Android Emulator
-- Server running at https://github.com/djscruggs/cardlessid
+- Server that matches the [Cardless ID](https://github.com/djscruggs/cardlessid) API  
 
 ### Installation
 
