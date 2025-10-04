@@ -3,10 +3,7 @@ import axios from 'axios';
 
 // Create a client for verification API - uses same base URL as credentials
 export const verificationClient = axios.create({
-  baseURL:
-    Env.APP_ENV === 'production'
-      ? 'https://cardlessid.org'
-      : 'http://192.168.0.12:5173',
+  baseURL: Env.CREDENTIAL_API_URL,
 });
 
 // Add request interceptor for debugging
