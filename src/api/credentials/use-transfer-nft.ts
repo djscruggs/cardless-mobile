@@ -5,10 +5,7 @@ import { createMutation } from 'react-query-kit';
 
 // Create a separate client for credential API since it has different base URL
 const credentialClient = axios.create({
-  baseURL:
-    Env.APP_ENV === 'production'
-      ? 'https://cardlessid.org'
-      : 'http://192.168.0.12:5173',
+  baseURL: Env.CREDENTIAL_API_URL,
 });
 
 // Add request interceptor for debugging

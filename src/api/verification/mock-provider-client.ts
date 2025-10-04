@@ -3,10 +3,7 @@ import axios from 'axios';
 
 // Mock provider client - separate from main server
 export const mockProviderClient = axios.create({
-  baseURL:
-    Env.APP_ENV === 'production'
-      ? 'https://mock-provider.cardlessid.org' // Not used in production
-      : 'http://192.168.0.12:3001',
+  baseURL: Env.MOCK_PROVIDER_API_URL,
 });
 
 // Add request interceptor for debugging

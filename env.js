@@ -88,6 +88,8 @@ const client = z.object({
 
   // ADD YOUR CLIENT ENV VARS HERE
   API_URL: z.string(),
+  CREDENTIAL_API_URL: z.string(),
+  MOCK_PROVIDER_API_URL: z.string(),
   ALGORAND_NETWORK: z.enum(['testnet', 'mainnet']).optional(),
   DEV_WALLET_ADDRESS: z.string().optional(),
   DEV_WALLET_MNEMONIC: z.string().optional(),
@@ -115,6 +117,8 @@ const _clientEnv = {
 
   // ADD YOUR ENV VARS HERE TOO
   API_URL: process.env.API_URL,
+  CREDENTIAL_API_URL: process.env.CREDENTIAL_API_URL,
+  MOCK_PROVIDER_API_URL: process.env.MOCK_PROVIDER_API_URL,
   ALGORAND_NETWORK: process.env.ALGORAND_NETWORK,
   DEV_WALLET_ADDRESS: process.env.DEV_WALLET_ADDRESS,
   DEV_WALLET_MNEMONIC: process.env.DEV_WALLET_MNEMONIC,

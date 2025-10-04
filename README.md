@@ -56,15 +56,21 @@ pnpm ios
 pnpm android
 ```
 
-### Development Server
+### Environment Configuration
 
-The app connects to a development server. Update the base URL in:
+The app uses environment variables for API endpoints. Configure them in the appropriate `.env` file:
 
-- `src/api/credentials/use-issue-credential.ts`
-- `src/api/verification/client.ts`
-- `src/api/verification/mock-provider-client.ts`
+- `.env.local` - Local development (uses this if it exists)
+- `.env.staging` - Staging environment
+- `.env.production` - Production environment
 
-Default: `http://192.168.0.12:5173` (main server) and `http://192.168.0.12:3001` (mock provider)
+**Environment Variables:**
+
+- `CREDENTIAL_API_URL` - Main credential/verification server (default: `http://192.168.0.12:5173`)
+- `MOCK_PROVIDER_API_URL` - Mock identity provider server (default: `http://192.168.0.12:3001`)
+- `ALGORAND_NETWORK` - Algorand network (`testnet` or `mainnet`)
+
+Update your `.env.local` file with your local server IP address if different from the defaults.
 
 ## Testing Verification Flow
 
