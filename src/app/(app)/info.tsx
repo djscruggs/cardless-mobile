@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { Image } from 'react-native';
 
-import { Cover } from '@/components/cover';
 import {
   Button,
   FocusAwareStatusBar,
@@ -20,18 +20,23 @@ export default function Onboarding() {
     setHasCredential(credential !== null);
   }, []);
   return (
-    <View className="flex h-full items-center  justify-center pb-6">
+    <View className="flex h-full items-center justify-start px-4">
       <FocusAwareStatusBar />
-      <View className="w-full flex-1">
-        <Cover />
-      </View>
-      <View className="justify-end ">
-        <Text className="my-3 text-center text-5xl font-bold">Cardless ID</Text>
+      <View className="w-full items-center pt-8">
+        <Text className="my-0 text-center text-5xl font-bold text-logoblue">
+          Cardless ID
+        </Text>
         <Text className="mb-2 text-center text-lg text-gray-600">
           Your private digital identity
         </Text>
-
-        <Text className="my-1 pt-6 text-left text-lg">
+        <Image
+          source={require('../../../assets/hero.png')}
+          style={{ width: 400, height: 300 }}
+          resizeMode="cover"
+        />
+      </View>
+      <View className="w-full px-8 pt-6">
+        <Text className="my-1 text-left text-lg">
           🔒 Privacy-first identity verification
         </Text>
         <Text className="my-1 text-left text-lg">
