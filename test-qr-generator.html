@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardless ID - Age Verification QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .mode-button {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-button.active {
+            border-color: #007AFF;
+            background: #e3f2fd;
+        }
+        .mode-button:hover {
+            border-color: #007AFF;
+        }
+        .mode-button h3 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        .mode-button p {
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .mode-content {
+            display: none;
+        }
+        .mode-content.active {
+            display: block;
+        }
+        label {
+            display: block;
+            margin: 20px 0 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #qrcode {
+            margin: 30px auto;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #eee;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .code-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        .deep-link-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .deep-link-url {
+            word-break: break-all;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        a.deep-link-button {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        a.deep-link-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Cardless ID QR Code Generator</h1>
+        <p class="subtitle">Generate test QR codes for age verification</p>
+
+        <div class="mode-selector">
+            <div class="mode-button active" onclick="switchMode('centralized')">
+                <h3>✅ Centralized Mode</h3>
+                <p>CardlessID CDN Integration (Recommended)</p>
+            </div>
+            <div class="mode-button" onclick="switchMode('standalone')">
+                <h3>Standalone Mode</h3>
+                <p>Direct callback (Legacy)</p>
+            </div>
+        </div>
+
+        <!-- Centralized Mode -->
+        <div id="centralized-mode" class="mode-content active">
+            <div class="info-box">
+                <strong>Centralized Mode:</strong>
+                <p>Simulates CardlessID CDN integration. QR code contains a challenge ID that points to CardlessID service.</p>
+                <ol>
+                    <li>Website loads CardlessID JavaScript SDK</li>
+                    <li>SDK creates challenge via CardlessID</li>
+                    <li>User scans QR code containing challenge URL</li>
+                    <li>App fetches challenge details from CardlessID</li>
+                    <li>App sends response to CardlessID</li>
+                    <li>CardlessID callbacks your website</li>
+                </ol>
+            </div>
+
+            <form id="centralizedForm">
+                <label for="centralizedMinAge">Minimum Age Requirement:</label>
+                <select id="centralizedMinAge">
+                    <option value="18">18 years old</option>
+                    <option value="21" selected>21 years old</option>
+                    <option value="25">25 years old</option>
+                </select>
+
+                <label for="websiteName">Website Name (Optional):</label>
+                <input
+                    type="text"
+                    id="websiteName"
+                    placeholder="My Website"
+                />
+
+                <label for="challengeId">Challenge ID (Auto-generated):</label>
+                <input
+                    type="text"
+                    id="challengeId"
+                    value="chal_1234567890_test123"
+                    placeholder="chal_1234567890_abc123"
+                />
+
+                <button type="submit">Generate CardlessID QR Code</button>
+            </form>
+        </div>
+
+        <!-- Standalone Mode -->
+        <div id="standalone-mode" class="mode-content">
+            <div class="info-box">
+                <strong>Standalone Mode (Legacy):</strong>
+                <p>Direct callback to website. App sends verification result directly to your callback URL.</p>
+                <p><strong>Note:</strong> This mode is deprecated. Use Centralized Mode for production.</p>
+            </div>
+
+            <form id="standaloneForm">
+                <label for="standaloneMinAge">Minimum Age Requirement:</label>
+                <select id="standaloneMinAge">
+                    <option value="18">18 years old</option>
+                    <option value="21" selected>21 years old</option>
+                    <option value="25">25 years old</option>
+                </select>
+
+                <label for="returnUrl">Callback URL:</label>
+                <input
+                    type="url"
+                    id="returnUrl"
+                    placeholder="https://yourwebsite.com/api/age-verification"
+                    value="http://localhost:3000/api/verify-callback"
+                    required
+                />
+
+                <label for="requestId">Request ID (optional):</label>
+                <input
+                    type="text"
+                    id="requestId"
+                    placeholder="unique-request-id-123"
+                />
+
+                <button type="submit">Generate Standalone QR Code</button>
+            </form>
+        </div>
+
+        <div id="qrcode"></div>
+
+        <div id="deepLinkSection" style="display: none;">
+            <div class="deep-link-box">
+                <strong>📱 Test on Mobile:</strong>
+                <p>Click the button below to open Cardless ID directly:</p>
+                <a id="deepLinkButton" class="deep-link-button" href="#">Open in Cardless ID</a>
+                <div class="deep-link-url" id="deepLinkUrl"></div>
+            </div>
+        </div>
+
+        <div id="requestData" style="display: none;">
+            <h3>Request Data:</h3>
+            <div class="code-box" id="jsonData"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentMode = 'centralized';
+
+        function switchMode(mode) {
+            currentMode = mode;
+
+            // Update buttons
+            document.querySelectorAll('.mode-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.mode-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${mode}-mode`).classList.add('active');
+
+            // Clear previous QR
+            document.getElementById('qrcode').innerHTML = '';
+            document.getElementById('deepLinkSection').style.display = 'none';
+            document.getElementById('requestData').style.display = 'none';
+        }
+
+        // Centralized mode form handler
+        document.getElementById('centralizedForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const minAge = parseInt(document.getElementById('centralizedMinAge').value);
+            const websiteName = document.getElementById('websiteName').value;
+            const challengeId = document.getElementById('challengeId').value || `chal_${Date.now()}_test`;
+
+            // In production, this URL would be your actual CardlessID domain
+            // For testing, we simulate the URL format
+            const qrUrl = `https://cardlessid.org/app/age-verify?challenge=${challengeId}`;
+            const deepLink = `cardlessid://verify?challenge=${challengeId}`;
+
+            await generateQRCode(qrUrl, deepLink, {
+                mode: 'centralized',
+                challengeId,
+                minAge,
+                websiteName,
+            });
+        });
+
+        // Standalone mode form handler
+        document.getElementById('standaloneForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const minAge = parseInt(document.getElementById('standaloneMinAge').value);
+            const today = new Date();
+            const minBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+            const minBirthDateISO = minBirthDate.toISOString().split('T')[0];
+
+            const scanRequest = {
+                type: 'age_verification',
+                minBirthDate: minBirthDateISO,
+                returnUrl: document.getElementById('returnUrl').value,
+                requestId: document.getElementById('requestId').value || undefined
+            };
+
+            // Remove undefined properties
+            if (!scanRequest.requestId) {
+                delete scanRequest.requestId;
+            }
+
+            const requestString = JSON.stringify(scanRequest);
+            const encodedData = btoa(requestString);
+            const deepLink = `cardlessid://verify?data=${encodedData}`;
+
+            await generateQRCode(requestString, deepLink, {
+                mode: 'standalone',
+                ...scanRequest,
+            });
+        });
+
+        async function generateQRCode(qrData, deepLink, metadata) {
+            const qrcodeDiv = document.getElementById('qrcode');
+            const requestDataDiv = document.getElementById('requestData');
+            const jsonDataDiv = document.getElementById('jsonData');
+            const deepLinkSection = document.getElementById('deepLinkSection');
+            const deepLinkButton = document.getElementById('deepLinkButton');
+            const deepLinkUrl = document.getElementById('deepLinkUrl');
+
+            // Clear previous QR code
+            qrcodeDiv.innerHTML = '';
+
+            try {
+                await QRCode.toCanvas(qrData, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }).then(canvas => {
+                    qrcodeDiv.appendChild(canvas);
+
+                    // Add download button
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = 'Download QR Code';
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = `cardlessid-qr-${metadata.mode}.png`;
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    };
+                    qrcodeDiv.appendChild(downloadBtn);
+                });
+
+                // Show request data
+                jsonDataDiv.textContent = JSON.stringify(metadata, null, 2);
+                requestDataDiv.style.display = 'block';
+
+                // Show deep link
+                deepLinkButton.href = deepLink;
+                deepLinkUrl.textContent = deepLink;
+                deepLinkSection.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                alert('Error generating QR code: ' + error.message);
+            }
+        }
+
+        // Generate a default QR code on page load (centralized mode)
+        window.addEventListener('load', () => {
+            document.getElementById('centralizedForm').dispatchEvent(new Event('submit'));
+        });
+    </script>
+</body>
+</html>

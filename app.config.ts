@@ -40,6 +40,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundleIdentifier: Env.BUNDLE_ID,
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSCameraUsageDescription:
+        'This app requires camera access to scan QR codes for age verification.',
     },
   },
   experiments: {
@@ -51,6 +53,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#FFFFFF',
     },
     package: Env.PACKAGE,
+    permissions: [
+      'android.permission.CAMERA',
+      'android.permission.RECORD_AUDIO',
+    ],
   },
   web: {
     favicon: './assets/favicon.png',
@@ -76,6 +82,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-dev-client',
     ['app-icon-badge', appIconBadgeConfig],
     ['react-native-edge-to-edge'],
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera',
+      },
+    ],
   ],
   extra: {
     ...ClientEnv,
