@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardless ID - Age Verification QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        label {
+            display: block;
+            margin: 20px 0 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #qrcode {
+            margin: 30px auto;
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            border: 2px solid #eee;
+        }
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .code-box {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        .deep-link-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .deep-link-url {
+            word-break: break-all;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        a.deep-link-button {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        a.deep-link-button:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔒 Cardless ID QR Code Generator</h1>
+        <p class="subtitle">Generate test QR codes for age verification</p>
+
+        <div class="info-box">
+            <strong>How to use:</strong>
+            <ol>
+                <li>Set the minimum birth date (users born before this date will pass verification)</li>
+                <li>Enter your callback URL (where the verification response will be sent)</li>
+                <li>Generate and scan the QR code with the Cardless ID app</li>
+            </ol>
+        </div>
+
+        <form id="qrForm">
+            <label for="minAge">Minimum Age Requirement:</label>
+            <select id="minAge">
+                <option value="18">18 years old</option>
+                <option value="21" selected>21 years old</option>
+                <option value="25">25 years old</option>
+            </select>
+
+            <label for="returnUrl">Callback URL:</label>
+            <input
+                type="url"
+                id="returnUrl"
+                placeholder="https://yourwebsite.com/api/age-verification"
+                value="http://localhost:3000/api/verify-callback"
+                required
+            />
+
+            <label for="requestId">Request ID (optional):</label>
+            <input
+                type="text"
+                id="requestId"
+                placeholder="unique-request-id-123"
+            />
+
+            <button type="submit">Generate QR Code</button>
+        </form>
+
+        <div id="qrcode"></div>
+
+        <div id="deepLinkSection" style="display: none;">
+            <div class="deep-link-box">
+                <strong>📱 Test on Mobile:</strong>
+                <p>If you're viewing this on your mobile device, click the button below to open Cardless ID directly:</p>
+                <a id="deepLinkButton" class="deep-link-button" href="#">Open in Cardless ID</a>
+                <div class="deep-link-url" id="deepLinkUrl"></div>
+            </div>
+        </div>
+
+        <div id="requestData" style="display: none;">
+            <h3>Request Data:</h3>
+            <div class="code-box" id="jsonData"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('qrForm');
+        const qrcodeDiv = document.getElementById('qrcode');
+        const requestDataDiv = document.getElementById('requestData');
+        const jsonDataDiv = document.getElementById('jsonData');
+        const deepLinkSection = document.getElementById('deepLinkSection');
+        const deepLinkButton = document.getElementById('deepLinkButton');
+        const deepLinkUrl = document.getElementById('deepLinkUrl');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Calculate minimum birth date
+            const minAge = parseInt(document.getElementById('minAge').value);
+            const today = new Date();
+            const minBirthDate = new Date(today.getFullYear() - minAge, today.getMonth(), today.getDate());
+
+            // Format as ISO date string
+            const minBirthDateISO = minBirthDate.toISOString().split('T')[0];
+
+            const scanRequest = {
+                type: 'age_verification',
+                minBirthDate: minBirthDateISO,
+                returnUrl: document.getElementById('returnUrl').value,
+                requestId: document.getElementById('requestId').value || undefined
+            };
+
+            // Remove undefined properties
+            if (!scanRequest.requestId) {
+                delete scanRequest.requestId;
+            }
+
+            const requestJSON = JSON.stringify(scanRequest, null, 2);
+            const requestString = JSON.stringify(scanRequest);
+
+            // Clear previous QR code
+            qrcodeDiv.innerHTML = '';
+
+            // Generate QR code
+            try {
+                await QRCode.toCanvas(requestString, {
+                    width: 300,
+                    margin: 2,
+                    color: {
+                        dark: '#000000',
+                        light: '#FFFFFF'
+                    }
+                }).then(canvas => {
+                    qrcodeDiv.appendChild(canvas);
+
+                    // Add download button
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.textContent = 'Download QR Code';
+                    downloadBtn.onclick = () => {
+                        const link = document.createElement('a');
+                        link.download = 'age-verification-qr.png';
+                        link.href = canvas.toDataURL();
+                        link.click();
+                    };
+                    qrcodeDiv.appendChild(downloadBtn);
+                });
+
+                // Show request data
+                jsonDataDiv.textContent = requestJSON;
+                requestDataDiv.style.display = 'block';
+
+                // Generate deep link
+                const encodedData = btoa(requestString);
+                const deepLink = `cardlessid://verify?data=${encodedData}`;
+
+                deepLinkButton.href = deepLink;
+                deepLinkUrl.textContent = deepLink;
+                deepLinkSection.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                alert('Error generating QR code: ' + error.message);
+            }
+        });
+
+        // Generate a default QR code on page load
+        window.addEventListener('load', () => {
+            form.dispatchEvent(new Event('submit'));
+        });
+    </script>
+</body>
+</html>
