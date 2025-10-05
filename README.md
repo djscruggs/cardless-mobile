@@ -124,9 +124,9 @@ This project is based on [Obytes starter](https://starter.obytes.com) - a produc
 This project uses the following logos and assets:
 
 - [Algorand](https://algorand.org/) - Blockchain platform for credential verification
-  ![Algorand Logo](assets/attribution/Algorand%20Full%20Logo%20Black.png)
-- Project Logo - Custom CardlessID branding
-  ![CardlessID Logo](assets/attribution/logo-transparent.png)
+  <img src="assets/attribution/Algorand%20Full%20Logo%20Black.png" alt="Algorand Logo" width="200">
+- [Cardless ID](https://cardlessid.org/) - Identity verification platform
+  <img src="assets/attribution/logo-transparent.png" alt="CardlessID Logo" width="150">
 
 ## License
 
