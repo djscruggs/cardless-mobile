@@ -34,7 +34,7 @@ This app currently uses a **mock verification server** for testing identity veri
 - Node.js 18+
 - pnpm
 - iOS Simulator (macOS) or Android Emulator
-- Server that matches the [Cardless ID](https://github.com/djscruggs/cardlessid) API  
+- Server that matches the [Cardless ID](https://github.com/djscruggs/cardlessid) API
 
 ### Installation
 
@@ -72,9 +72,17 @@ The app uses environment variables for API endpoints. Configure them in the appr
 
 Update your `.env.local` file with your local server IP address if different from the defaults.
 
-## Testing Verification Flow
+## Documentation
 
-See [MOBILE_CLIENT_TESTING.md](MOBILE_CLIENT_TESTING.md) for detailed instructions on testing with the mock provider server.
+- [Testing Verification Flow](docs/MOBILE_CLIENT_TESTING.md) - Detailed instructions on testing with the mock provider server
+- [Deep Linking](docs/DEEP_LINKING.md) - Age verification request handling
+- [Scan Feature](docs/SCAN-FEATURE.md) - QR code scanning implementation
+- [Implementation Compliance](docs/IMPLEMENTATION_COMPLIANCE.md) - Compliance documentation
+- [Verification API](docs/VERIFICATION_API.md) - API documentation
+- [Wallet README](docs/WALLET_README.md) - Wallet functionality overview
+- [NFT Credential Guide](docs/NFT-CREDENTIAL-CLIENT-GUIDE.md) - Credential management guide
+
+## Testing Verification Flow
 
 **Quick Start:**
 
@@ -110,3 +118,16 @@ src/
 ## Based On
 
 This project is based on [Obytes starter](https://starter.obytes.com) - a production-ready React Native template.
+
+## Attribution
+
+This project uses the following logos and assets:
+
+- [Algorand](https://algorand.org/) - Blockchain platform for credential verification
+  ![Algorand Logo](assets/attribution/Algorand%20Full%20Logo%20Black.png)
+- Project Logo - Custom CardlessID branding
+  ![CardlessID Logo](assets/attribution/logo-transparent.png)
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -58,12 +58,13 @@ cardlessid://verify?data=<base64-encoded-json>
 ```
 
 Example:
+
 ```javascript
 const scanRequest = {
   type: 'age_verification',
   minBirthDate: '2003-01-01',
   returnUrl: 'https://example.com/api/verify-callback',
-  requestId: 'req-123'
+  requestId: 'req-123',
 };
 
 const encodedData = btoa(JSON.stringify(scanRequest));
@@ -131,6 +132,7 @@ app.listen(3000, () => {
 ```
 
 For testing from mobile devices on the same network, use your computer's local IP:
+
 ```
 http://192.168.1.100:3000/api/verify-callback
 ```
@@ -162,30 +164,32 @@ http://192.168.1.100:3000/api/verify-callback
 </div>
 
 <script>
-// Generate verification request
-const scanRequest = {
-  type: 'age_verification',
-  minBirthDate: new Date(new Date().getFullYear() - 21, 0, 1).toISOString().split('T')[0],
-  returnUrl: 'https://yoursite.com/api/age-verify',
-  requestId: generateUniqueId()
-};
+  // Generate verification request
+  const scanRequest = {
+    type: 'age_verification',
+    minBirthDate: new Date(new Date().getFullYear() - 21, 0, 1)
+      .toISOString()
+      .split('T')[0],
+    returnUrl: 'https://yoursite.com/api/age-verify',
+    requestId: generateUniqueId(),
+  };
 
-const qrData = JSON.stringify(scanRequest);
+  const qrData = JSON.stringify(scanRequest);
 
-// Desktop: Show QR code
-if (window.innerWidth > 768) {
-  QRCode.toCanvas(document.getElementById('qr-code'), qrData, {
-    width: 256
-  });
-} else {
-  // Mobile: Show deep link button
-  const encodedData = btoa(qrData);
-  const deepLink = `cardlessid://verify?data=${encodedData}`;
+  // Desktop: Show QR code
+  if (window.innerWidth > 768) {
+    QRCode.toCanvas(document.getElementById('qr-code'), qrData, {
+      width: 256,
+    });
+  } else {
+    // Mobile: Show deep link button
+    const encodedData = btoa(qrData);
+    const deepLink = `cardlessid://verify?data=${encodedData}`;
 
-  const button = document.getElementById('verify-button');
-  button.href = deepLink;
-  button.style.display = 'block';
-}
+    const button = document.getElementById('verify-button');
+    button.href = deepLink;
+    button.style.display = 'block';
+  }
 </script>
 ```
 
@@ -200,7 +204,7 @@ app.post('/api/age-verify', async (req, res) => {
   if (!verified) {
     return res.status(403).json({
       success: false,
-      message: 'Age verification failed'
+      message: 'Age verification failed',
     });
   }
 
@@ -211,7 +215,7 @@ app.post('/api/age-verify', async (req, res) => {
   if (!credentialExists) {
     return res.status(403).json({
       success: false,
-      message: 'Invalid credential'
+      message: 'Invalid credential',
     });
   }
 
@@ -238,15 +242,18 @@ app.post('/api/age-verify', async (req, res) => {
 ## Troubleshooting
 
 ### Camera Not Working
+
 - Check that camera permissions are granted in device settings
 - Rebuild the app after installing expo-camera: `npm run prebuild && npm run ios`
 
 ### Deep Links Not Opening App
+
 - Verify the app scheme is configured correctly in `app.config.ts`
 - Check that the app is installed on the device
 - Ensure the deep link format is correct: `cardlessid://verify?data=...`
 
 ### Verification Not Sent
+
 - Check console logs for errors
 - Verify returnUrl is accessible
 - Make sure returnUrl accepts POST requests with JSON body

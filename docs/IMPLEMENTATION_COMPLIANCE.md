@@ -9,6 +9,7 @@ The current implementation differs significantly from DEEP_LINKING.md and WALLET
 ### 1. Deep Link Format Mismatch ❌
 
 **Expected (per DEEP_LINKING.md):**
+
 ```
 cardlessid://verify?challenge=chal_123
 cardlessid://verify?session=age_123
@@ -16,6 +17,7 @@ https://cardlessid.com/app/wallet-verify?challenge=chal_123
 ```
 
 **Current Implementation:**
+
 ```
 cardlessid://verify?data=<base64-encoded-json>
 ```
@@ -29,12 +31,14 @@ cardlessid://verify?data=<base64-encoded-json>
 ### 2. API Endpoint Integration Missing ❌
 
 **Expected (per WALLET_README.md):**
+
 - `GET /api/integrator/challenge/details/{challengeId}`
 - `POST /api/integrator/challenge/respond`
 - `GET /api/age-verify/session/:id`
 - `POST /api/age-verify/respond`
 
 **Current Implementation:**
+
 - Custom `returnUrl` callback only
 - No integration with cardlessid.com API
 
@@ -47,11 +51,13 @@ cardlessid://verify?data=<base64-encoded-json>
 ### 3. QR Code Format Different ❌
 
 **Expected (per DEEP_LINKING.md):**
+
 ```
 QR Code contains: https://cardlessid.com/app/age-verify?challenge=chal_123
 ```
 
 **Current Implementation:**
+
 ```json
 QR Code contains: {
   "type": "age_verification",
@@ -69,6 +75,7 @@ QR Code contains: {
 ### 4. Response Format Mismatch ⚠️
 
 **Expected:**
+
 ```json
 {
   "challengeId": "chal_123",
@@ -78,6 +85,7 @@ QR Code contains: {
 ```
 
 **Current:**
+
 ```json
 {
   "verified": true,
@@ -100,21 +108,25 @@ QR Code contains: {
 Support **both** the documented CardlessID integration AND standalone verification:
 
 #### Mode A: CardlessID Integration (per docs)
+
 - Deep links: `cardlessid://verify?challenge=chal_123`
 - API calls to cardlessid.com
 - Response format: `{challengeId, approved, walletAddress}`
 
 #### Mode B: Standalone Verification (current)
+
 - Deep links: `cardlessid://verify?data=<base64>`
 - Custom returnUrl callbacks
 - Response format: `{verified, walletAddress, ...}`
 
 **Advantages:**
+
 - ✅ Fully compliant with documentation
 - ✅ Backward compatible with existing implementation
 - ✅ Flexible for different use cases
 
 **Implementation:**
+
 ```typescript
 // Detect mode from deep link params
 if (params.challenge || params.session) {
@@ -133,10 +145,12 @@ if (params.challenge || params.session) {
 Update DEEP_LINKING.md and WALLET_README.md to match the current implementation.
 
 **Advantages:**
+
 - ✅ No code changes needed
 - ✅ Simpler implementation
 
 **Disadvantages:**
+
 - ❌ Breaking change for anyone following current docs
 - ❌ May conflict with existing cardlessid.com infrastructure
 
@@ -215,7 +229,9 @@ export async function respondToChallenge(
 }
 
 export async function getSessionDetails(sessionId: string) {
-  const response = await axios.get(`${API_BASE}/age-verify/session/${sessionId}`);
+  const response = await axios.get(
+    `${API_BASE}/age-verify/session/${sessionId}`
+  );
   return response.data;
 }
 
@@ -235,10 +251,7 @@ export async function respondToSession(data: {
 ```typescript
 import { Alert } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
-import {
-  getChallengeDetails,
-  respondToChallenge,
-} from '@/api/cardlessid';
+import { getChallengeDetails, respondToChallenge } from '@/api/cardlessid';
 import { credentialStorage, wallet } from '@/lib';
 
 export async function handleChallengeVerification(challengeId: string) {
@@ -247,7 +260,10 @@ export async function handleChallengeVerification(challengeId: string) {
     const challenge = await getChallengeDetails(challengeId);
 
     if (challenge.status !== 'pending') {
-      Alert.alert('Error', 'This verification request has expired or already been completed');
+      Alert.alert(
+        'Error',
+        'This verification request has expired or already been completed'
+      );
       return;
     }
 
@@ -263,7 +279,10 @@ export async function handleChallengeVerification(challengeId: string) {
     const today = new Date();
     let age = today.getFullYear() - userBirthDate.getFullYear();
     const monthDiff = today.getMonth() - userBirthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < userBirthDate.getDate())) {
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < userBirthDate.getDate())
+    ) {
       age--;
     }
 
@@ -325,7 +344,10 @@ const handleBarCodeScanned = React.useCallback(
         const url = new URL(data);
 
         // Check if it's a CardlessID verification URL
-        if (url.pathname === '/app/age-verify' || url.pathname === '/app/wallet-verify') {
+        if (
+          url.pathname === '/app/age-verify' ||
+          url.pathname === '/app/wallet-verify'
+        ) {
           const challengeId = url.searchParams.get('challenge');
           const sessionId = url.searchParams.get('session');
 
@@ -333,7 +355,10 @@ const handleBarCodeScanned = React.useCallback(
             await handleChallengeVerification(challengeId);
             return;
           } else if (sessionId) {
-            await handleSessionVerification(sessionId, url.searchParams.get('minAge') || '21');
+            await handleSessionVerification(
+              sessionId,
+              url.searchParams.get('minAge') || '21'
+            );
             return;
           }
         }
@@ -360,6 +385,7 @@ const handleBarCodeScanned = React.useCallback(
 After implementing changes:
 
 ### CardlessID Integration Mode
+
 - [ ] Deep link with `challenge` parameter works
 - [ ] Can fetch challenge details from cardlessid.com
 - [ ] Age calculation is correct
@@ -367,11 +393,13 @@ After implementing changes:
 - [ ] API response is successful
 
 ### Standalone Mode
+
 - [ ] JSON QR codes still work
 - [ ] Custom returnUrl callbacks work
 - [ ] Backward compatibility maintained
 
 ### Universal Links (Future)
+
 - [ ] HTTPS URLs in QR codes
 - [ ] App opens from browser
 - [ ] Fallback to web works
