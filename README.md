@@ -103,7 +103,6 @@ src/
 │   └── verification/ # Verification session management
 ├── app/              # Expo Router screens
 │   ├── (app)/        # Main app screens
-│   └── (auth)/       # Authentication screens
 ├── components/       # Reusable components
 └── lib/              # Utilities and storage
 ```
