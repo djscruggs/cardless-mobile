@@ -15,6 +15,7 @@ The app now supports **THREE modes** of operation:
 **What it is:** The proper architecture as described in the documentation.
 
 **How it works:**
+
 ```
 Website → CardlessID API → Creates Challenge → QR Code Generated
                 ↓
@@ -24,19 +25,23 @@ User Approves → App Responds to CardlessID → CardlessID Callbacks Website
 ```
 
 **Deep Link Format:**
+
 - `cardlessid://verify?challenge=chal_123`
 - `https://cardlessid.org/app/age-verify?challenge=chal_123` (Universal Link)
 
 **QR Code Contains:**
+
 ```
 https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ```
 
 **API Endpoints Used:**
+
 - `GET /api/integrator/challenge/details/{challengeId}` - Fetch challenge details
 - `POST /api/integrator/challenge/respond` - Submit verification response
 
 **Response Format:**
+
 ```json
 {
   "challengeId": "chal_123",
@@ -52,9 +57,11 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 **What it is:** For the age-verify demo page.
 
 **Deep Link Format:**
+
 - `cardlessid://verify?session=age_123`
 
 **API Endpoints:**
+
 - `GET /api/age-verify/session/{sessionId}`
 - `POST /api/age-verify/respond`
 
@@ -65,9 +72,11 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 **What it is:** Legacy mode where app directly callbacks websites (not recommended).
 
 **Deep Link Format:**
+
 - `cardlessid://verify?data=<base64-encoded-json>`
 
 **QR Code Contains:**
+
 ```json
 {
   "type": "age_verification",
@@ -77,6 +86,7 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ```
 
 **Notes:**
+
 - Maintained for backward compatibility only
 - Should not be used for new integrations
 - App directly POSTs to the `returnUrl`
@@ -86,6 +96,7 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ## Files Created/Modified
 
 ### New API Client
+
 - **[src/api/challenge/client.ts](src/api/challenge/client.ts)** - CardlessID API client
   - `getChallengeDetails(challengeId)` - Fetch challenge from CardlessID
   - `respondToChallenge(data)` - Send response to CardlessID
@@ -97,25 +108,28 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
   - `useChallengeResponse()` - Hook for submitting responses
 
 ### Updated Components
-- **[src/app/(app)/scan.tsx](src/app/(app)/scan.tsx)** - QR Scanner
+
+- **[src/app/(app)/scan.tsx](<src/app/(app)/scan.tsx>)** - QR Scanner
   - ✅ Detects URL-based QR codes (centralized mode)
   - ✅ Parses challenge/session parameters
   - ✅ Calls CardlessID API for challenge details
   - ✅ Sends responses in correct format
   - ⚠️ Maintains backward compatibility with standalone mode
 
-- **[src/app/_layout.tsx](src/app/_layout.tsx)** - Deep Link Handler
+- **[src/app/\_layout.tsx](src/app/_layout.tsx)** - Deep Link Handler
   - ✅ Handles `challenge` parameter (centralized)
   - ✅ Handles `session` parameter (demo)
   - ⚠️ Handles `data` parameter (standalone/legacy)
 
 ### Testing Tools
+
 - **[test-qr-generator.html](test-qr-generator.html)** - Updated QR Generator
   - ✅ Centralized mode tab (generates challenge-based QR codes)
   - ⚠️ Standalone mode tab (legacy)
   - Generates both QR codes and deep links for mobile testing
 
 ### Documentation
+
 - **[IMPLEMENTATION_COMPLIANCE.md](IMPLEMENTATION_COMPLIANCE.md)** - Detailed compliance analysis
 - **[SCAN-FEATURE.md](SCAN-FEATURE.md)** - Original scan feature docs (standalone focus)
 - **[COMPLIANCE-SUMMARY.md](COMPLIANCE-SUMMARY.md)** - This file
@@ -125,12 +139,14 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ## What Changed to Achieve Compliance
 
 ### Before ❌
+
 - Only supported standalone mode (direct callback to websites)
 - QR codes contained raw JSON
 - Deep links used `?data=<base64>` format
 - No integration with CardlessID service
 
 ### After ✅
+
 - **Primary:** Centralized mode via CardlessID API
 - **Secondary:** Demo mode for testing
 - **Fallback:** Standalone mode for backward compatibility
@@ -143,6 +159,7 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ## Testing Compliance
 
 ### Test Centralized Mode
+
 1. Open [test-qr-generator.html](test-qr-generator.html)
 2. Ensure "Centralized Mode" is selected
 3. Generate QR code
@@ -152,6 +169,7 @@ https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
    - `POST /api/integrator/challenge/respond`
 
 ### Test Deep Links
+
 ```
 # Centralized (production)
 cardlessid://verify?challenge=chal_123
@@ -164,6 +182,7 @@ cardlessid://verify?data=eyJ0eXBlIjoi...
 ```
 
 ### Expected Behavior
+
 - **Centralized:** App fetches from CardlessID, shows website name (if provided), sends response to CardlessID
 - **Session:** App fetches session details, completes demo flow
 - **Standalone:** App shows generic message, POSTs directly to returnUrl
@@ -175,9 +194,11 @@ cardlessid://verify?data=eyJ0eXBlIjoi...
 ### Centralized Service Model ✅
 
 **Documentation States:**
+
 > Sites load a JavaScript from a CDN. Verification is handled by CardlessID. On success/failure it makes a callback to those sites.
 
 **Implementation:**
+
 1. ✅ Website loads CardlessID SDK (server-side responsibility)
 2. ✅ SDK creates challenge via CardlessID API (server-side)
 3. ✅ User scans QR code containing `?challenge=` URL
@@ -192,39 +213,42 @@ cardlessid://verify?data=eyJ0eXBlIjoi...
 
 ## API Endpoint Compliance
 
-| Endpoint | Status | Implementation |
-|----------|--------|----------------|
-| `GET /api/integrator/challenge/details/:id` | ✅ | [client.ts:33](src/api/challenge/client.ts#L33) |
-| `POST /api/integrator/challenge/respond` | ✅ | [client.ts:47](src/api/challenge/client.ts#L47) |
-| `GET /api/age-verify/session/:id` | ✅ | [client.ts:74](src/api/challenge/client.ts#L74) |
-| `POST /api/age-verify/respond` | ✅ | [client.ts:84](src/api/challenge/client.ts#L84) |
+| Endpoint                                    | Status | Implementation                                  |
+| ------------------------------------------- | ------ | ----------------------------------------------- |
+| `GET /api/integrator/challenge/details/:id` | ✅     | [client.ts:33](src/api/challenge/client.ts#L33) |
+| `POST /api/integrator/challenge/respond`    | ✅     | [client.ts:47](src/api/challenge/client.ts#L47) |
+| `GET /api/age-verify/session/:id`           | ✅     | [client.ts:74](src/api/challenge/client.ts#L74) |
+| `POST /api/age-verify/respond`              | ✅     | [client.ts:84](src/api/challenge/client.ts#L84) |
 
 ---
 
 ## Deep Link Format Compliance
 
-| Format | Status | Use Case |
-|--------|--------|----------|
-| `cardlessid://verify?challenge=...` | ✅ | Production (CDN integration) |
-| `cardlessid://verify?session=...` | ✅ | Demo/testing |
-| `cardlessid://verify?data=...` | ⚠️ | Legacy (backward compatibility) |
-| `https://cardlessid.org/app/age-verify?challenge=...` | 🔜 | Universal Links (future) |
+| Format                                                | Status | Use Case                        |
+| ----------------------------------------------------- | ------ | ------------------------------- |
+| `cardlessid://verify?challenge=...`                   | ✅     | Production (CDN integration)    |
+| `cardlessid://verify?session=...`                     | ✅     | Demo/testing                    |
+| `cardlessid://verify?data=...`                        | ⚠️     | Legacy (backward compatibility) |
+| `https://cardlessid.org/app/age-verify?challenge=...` | 🔜     | Universal Links (future)        |
 
 ---
 
 ## QR Code Format Compliance
 
 ### Production (Recommended) ✅
+
 ```
 https://cardlessid.org/app/age-verify?challenge=chal_1234567890_abc123
 ```
 
 ### Demo ✅
+
 ```
 https://cardlessid.org/app/age-verify?session=age_1234567890_test
 ```
 
 ### Legacy ⚠️
+
 ```json
 {
   "type": "age_verification",
@@ -238,6 +262,7 @@ https://cardlessid.org/app/age-verify?session=age_1234567890_test
 ## Response Format Compliance
 
 ### Challenge Response ✅
+
 ```json
 {
   "challengeId": "chal_123",
@@ -245,9 +270,11 @@ https://cardlessid.org/app/age-verify?session=age_1234567890_test
   "walletAddress": "ALGO_ADDRESS"
 }
 ```
+
 Matches documentation exactly.
 
 ### Session Response ✅
+
 ```json
 {
   "sessionId": "age_123",
@@ -257,6 +284,7 @@ Matches documentation exactly.
 ```
 
 ### Standalone (Legacy) ⚠️
+
 ```json
 {
   "verified": true,
@@ -265,6 +293,7 @@ Matches documentation exactly.
   "timestamp": "..."
 }
 ```
+
 Different format, but only used for backward compatibility.
 
 ---
@@ -288,12 +317,14 @@ Different format, but only used for backward compatibility.
 ### For Production Deployment
 
 1. **Configure API URL**
+
    ```bash
    # Update .env.production
    API_URL=https://cardlessid.org/mobile
    ```
 
 2. **Rebuild App**
+
    ```bash
    npm run prebuild:production
    npm run ios:production

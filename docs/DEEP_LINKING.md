@@ -13,16 +13,19 @@ When a user scans a QR code for age verification, their phone needs to know to o
 **Format:** `cardlessid://verify?challenge=chal_123...`
 
 **Pros:**
+
 - Simple to implement
 - Works immediately after app install
 
 **Cons:**
+
 - Not verified by OS (any app can register `cardlessid://`)
 - Security risk (malicious apps could hijack)
 - No fallback to website
 - iOS shows confirmation dialog
 
 **Current Implementation:**
+
 ```javascript
 // In age-verify.tsx
 const deepLinkUrl = `cardlessid://verify?challenge=${challengeId}`;
@@ -33,6 +36,7 @@ const deepLinkUrl = `cardlessid://verify?challenge=${challengeId}`;
 **Format:** `https://cardlessid.com/app/age-verify?challenge=chal_123...`
 
 **Pros:**
+
 - ✅ Secure (verified by OS using cryptographic signatures)
 - ✅ Seamless (opens app directly, no confirmation)
 - ✅ Fallback (opens website if app not installed)
@@ -40,6 +44,7 @@ const deepLinkUrl = `cardlessid://verify?challenge=${challengeId}`;
 - ✅ Better user experience
 
 **Cons:**
+
 - Requires server-side configuration files
 - Requires app to be signed and published
 
@@ -48,11 +53,13 @@ const deepLinkUrl = `cardlessid://verify?challenge=${challengeId}`;
 ### 1. Create Apple App Site Association File
 
 File must be served at:
+
 ```
 https://cardlessid.com/.well-known/apple-app-site-association
 ```
 
 Content:
+
 ```json
 {
   "applinks": {
@@ -60,10 +67,7 @@ Content:
     "details": [
       {
         "appID": "TEAM_ID.com.cardlessid.wallet",
-        "paths": [
-          "/app/age-verify",
-          "/app/wallet-verify"
-        ]
+        "paths": ["/app/age-verify", "/app/wallet-verify"]
       }
     ]
   }
@@ -71,6 +75,7 @@ Content:
 ```
 
 **Important:**
+
 - No `.json` extension
 - Must be served with `Content-Type: application/json`
 - Must be accessible via HTTPS
@@ -79,6 +84,7 @@ Content:
 ### 2. Configure iOS App (Xcode)
 
 **Add Associated Domains capability:**
+
 ```
 Signing & Capabilities → + Capability → Associated Domains
 
@@ -87,6 +93,7 @@ applinks:cardlessid.com
 ```
 
 **Handle incoming links (Swift):**
+
 ```swift
 // AppDelegate.swift or SceneDelegate.swift
 func application(_ application: UIApplication,
@@ -117,6 +124,7 @@ func application(_ application: UIApplication,
 ### 3. Test Universal Links
 
 **Test from Safari:**
+
 ```
 https://cardlessid.com/app/age-verify?challenge=test_123
 ```
@@ -124,6 +132,7 @@ https://cardlessid.com/app/age-verify?challenge=test_123
 Should open the app directly (no prompt).
 
 **Debug:**
+
 ```bash
 # Check if Apple can fetch your file
 curl -v https://cardlessid.com/.well-known/apple-app-site-association
@@ -136,11 +145,13 @@ curl -v https://cardlessid.com/.well-known/apple-app-site-association
 ### 1. Create Asset Links File
 
 File must be served at:
+
 ```
 https://cardlessid.com/.well-known/assetlinks.json
 ```
 
 Content:
+
 ```json
 [
   {
@@ -148,15 +159,14 @@ Content:
     "target": {
       "namespace": "android_app",
       "package_name": "com.cardlessid.wallet",
-      "sha256_cert_fingerprints": [
-        "YOUR_APP_SHA256_FINGERPRINT"
-      ]
+      "sha256_cert_fingerprints": ["YOUR_APP_SHA256_FINGERPRINT"]
     }
   }
 ]
 ```
 
 **Get your SHA256 fingerprint:**
+
 ```bash
 # For debug keystore
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
@@ -213,6 +223,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
 ### 4. Test App Links
 
 **Test with ADB:**
+
 ```bash
 adb shell am start -a android.intent.action.VIEW \
   -d "https://cardlessid.com/app/age-verify?challenge=test_123" \
@@ -220,6 +231,7 @@ adb shell am start -a android.intent.action.VIEW \
 ```
 
 **Verify setup:**
+
 ```bash
 adb shell dumpsys package d
 # Look for "cardlessid.com" in the output
@@ -231,17 +243,19 @@ Our current code generates both formats:
 
 ```typescript
 // In age-verify.tsx
-const deepLinkUrl = isIntegratorMode && challengeId
-  ? `cardlessid://verify?challenge=${challengeId}`
-  : sessionId
-  ? `cardlessid://verify?session=${sessionId}&minAge=${minAge}`
-  : "";
+const deepLinkUrl =
+  isIntegratorMode && challengeId
+    ? `cardlessid://verify?challenge=${challengeId}`
+    : sessionId
+      ? `cardlessid://verify?session=${sessionId}&minAge=${minAge}`
+      : '';
 
-const webFallbackUrl = isIntegratorMode && challengeId
-  ? `${window.location.origin}/app/wallet-verify?challenge=${challengeId}`
-  : sessionId
-  ? `${window.location.origin}/app/wallet-verify?session=${sessionId}`
-  : "";
+const webFallbackUrl =
+  isIntegratorMode && challengeId
+    ? `${window.location.origin}/app/wallet-verify?challenge=${challengeId}`
+    : sessionId
+      ? `${window.location.origin}/app/wallet-verify?session=${sessionId}`
+      : '';
 ```
 
 ## Recommended Production Implementation
@@ -304,6 +318,7 @@ location /.well-known/assetlinks.json {
 The files are already in `public/.well-known/` and will be served automatically.
 
 **Verify they're accessible:**
+
 ```bash
 curl https://cardlessid.com/.well-known/apple-app-site-association
 curl https://cardlessid.com/.well-known/assetlinks.json
@@ -312,16 +327,19 @@ curl https://cardlessid.com/.well-known/assetlinks.json
 ## QR Code Contents
 
 ### Current (Custom Scheme)
+
 ```
 cardlessid://verify?challenge=chal_1234567890_abc123
 ```
 
 ### Recommended (Universal Link)
+
 ```
 https://cardlessid.com/app/age-verify?challenge=chal_1234567890_abc123
 ```
 
 **Benefits of HTTPS in QR code:**
+
 - Works on web browsers (opens website)
 - Opens app if installed (via universal links)
 - More trustworthy (users see real domain)
@@ -364,6 +382,7 @@ QR contains: https://cardlessid.com/app/age-verify?challenge=chal_123
 ## Troubleshooting
 
 **iOS: Universal Links not working**
+
 - Check file is at `/.well-known/apple-app-site-association` (no .json)
 - Verify HTTPS and valid SSL certificate
 - Check Team ID matches
@@ -371,6 +390,7 @@ QR contains: https://cardlessid.com/app/age-verify?challenge=chal_123
 - Test in Safari, not in-app browsers
 
 **Android: App Links not working**
+
 - Verify SHA256 fingerprint is correct
 - Check `android:autoVerify="true"` is set
 - Test with ADB command
@@ -378,6 +398,7 @@ QR contains: https://cardlessid.com/app/age-verify?challenge=chal_123
 - May take time for Google to verify
 
 **General:**
+
 - Clear browser cache
 - Test on real device (simulators may behave differently)
 - Check server logs for 404s on association files
