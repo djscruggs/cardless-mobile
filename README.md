@@ -119,15 +119,6 @@ src/
 
 This project is based on [Obytes starter](https://starter.obytes.com) - a production-ready React Native template.
 
-## Attribution
-
-This project uses the following logos and assets:
-
-- [Algorand](https://algorand.org/) - Blockchain platform for credential verification
-  <img src="assets/attribution/Algorand%20Full%20Logo%20Black.png" alt="Algorand Logo" width="200">
-- [Cardless ID](https://cardlessid.org/) - Identity verification platform
-  <img src="assets/attribution/logo-transparent.png" alt="CardlessID Logo" width="150">
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
