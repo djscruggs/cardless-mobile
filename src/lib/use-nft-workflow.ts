@@ -67,7 +67,7 @@ export function useNFTWorkflow({
 
       console.log('✅ Opt-in successful, txId:', txId);
       showMessage({
-        message: 'Opt-in successful! Requesting transfer...',
+        message: 'Credential created! Requesting transfer...',
         type: 'success',
       });
 
@@ -90,7 +90,7 @@ export function useNFTWorkflow({
             });
 
             showMessage({
-              message: 'NFT credential transferred successfully!',
+              message: 'Credential transferred successfully!',
               type: 'success',
             });
 
