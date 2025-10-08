@@ -8,6 +8,7 @@ import { showMessage } from 'react-native-flash-message';
 import {
   Button,
   FocusAwareStatusBar,
+  ObfuscatedText,
   ScrollView,
   Text,
   View,
@@ -172,8 +173,11 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         ID Number
                       </Text>
-                      <Text className="text-base font-semibold dark:text-white">
-                        {personalData.governmentId}
+                      <Text className="mt-5">
+                        <ObfuscatedText
+                          value={personalData.governmentId}
+                          testID="government-id"
+                        />
                       </Text>
                     </View>
 

@@ -15,7 +15,11 @@ import {
   showErrorMessage,
   View,
 } from '@/components/ui';
-import { credentialStorage, initializeWallet } from '@/lib';
+import {
+  credentialStorage,
+  initializeWallet,
+  secureDocumentStorage,
+} from '@/lib';
 
 const US_STATES = [
   { label: 'Alabama', value: 'AL' },
@@ -128,6 +132,15 @@ export default function CreateIdentity() {
         onSuccess: async (response) => {
           console.log('✅ Credential issued successfully:', response);
           await credentialStorage.saveCredential(response);
+
+          // Store document ID securely
+          const docType =
+            data.idType === 'passport' ? 'passport' : 'governmentId';
+          await secureDocumentStorage.storeDocumentId(
+            docType,
+            data.governmentId
+          );
+
           showMessage({
             message: 'Identity created successfully',
             type: 'success',
