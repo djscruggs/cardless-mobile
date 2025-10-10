@@ -48,6 +48,10 @@ export default function MyID() {
     router.push('/(app)/verify-identity');
   };
 
+  const handleCustomVerify = () => {
+    router.push('/(app)/custom-verify');
+  };
+
   const handleClearCredential = async () => {
     await credentialStorage.clearCredential();
     setCredential(null);
@@ -258,7 +262,13 @@ export default function MyID() {
                 </View>
                 <View className="mt-6 space-y-3">
                   <Button
-                    label="Verify Identity"
+                    label="Custom Verification (Photo ID)"
+                    onPress={handleCustomVerify}
+                    testID="custom-verify-button"
+                  />
+                  <Button
+                    label="Verify Identity (Mock)"
+                    variant="secondary"
                     onPress={handleVerifyIdentity}
                     testID="verify-identity-button"
                   />

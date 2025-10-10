@@ -80,6 +80,7 @@ export default function TabLayout() {
       <Tabs.Screen name="style" options={{ href: null }} />
       <Tabs.Screen name="create-identity" options={{ href: null }} />
       <Tabs.Screen name="verify-identity" options={{ href: null }} />
+      <Tabs.Screen name="custom-verify" options={{ href: null }} />
     </Tabs>
   );
 }
