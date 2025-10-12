@@ -1,3 +1,7 @@
+// IMPORTANT: This polyfill must be imported BEFORE algosdk
+// to provide crypto.getRandomValues() for React Native
+import 'react-native-get-random-values';
+
 import algosdk from 'algosdk';
 
 import { getItem, removeItem, setItem } from './storage';

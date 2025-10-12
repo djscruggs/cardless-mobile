@@ -99,10 +99,58 @@ type FormType = z.infer<typeof schema>;
 export default function CreateIdentity() {
   const router = useRouter();
   const [walletAddress, setWalletAddress] = React.useState<string | null>(null);
-  const { control, handleSubmit } = useForm<FormType>({
+  const [isLoadingDummyData, setIsLoadingDummyData] = React.useState(false);
+  const { control, handleSubmit, setValue } = useForm<FormType>({
     resolver: zodResolver(schema),
   });
   const { mutate: issueCredential, isPending } = useIssueCredential();
+
+  // Load dummy data from DummyJSON
+  const loadDummyData = React.useCallback(async () => {
+    try {
+      setIsLoadingDummyData(true);
+      const randomId = Math.floor(Math.random() * 30) + 1; // 1-30
+      const response = await fetch(`https://dummyjson.com/users/${randomId}`);
+      const data = await response.json();
+
+      console.log('📋 Loaded dummy data:', data);
+
+      // Map DummyJSON data to form fields
+      setValue('firstName', data.firstName);
+      setValue('lastName', data.lastName);
+      setValue('middleName', data.maidenName || '');
+
+      // Generate random birth date (21-80 years ago)
+      const yearsAgo = Math.floor(Math.random() * 60) + 21;
+      const birthYear = new Date().getFullYear() - yearsAgo;
+      const birthMonth = String(Math.floor(Math.random() * 12) + 1).padStart(
+        2,
+        '0'
+      );
+      const birthDay = String(Math.floor(Math.random() * 28) + 1).padStart(
+        2,
+        '0'
+      );
+      setValue('birthDate', `${birthMonth}-${birthDay}-${birthYear}`);
+
+      // Generate random government ID
+      const govId = `D${Math.floor(Math.random() * 10000000)
+        .toString()
+        .padStart(7, '0')}`;
+      setValue('governmentId', govId);
+
+      // Set random ID type and state
+      setValue('idType', 'government_id');
+      const states = ['CA', 'NY', 'TX', 'FL', 'IL', 'PA', 'OH', 'GA'];
+      setValue('state', states[Math.floor(Math.random() * states.length)]);
+
+      setIsLoadingDummyData(false);
+    } catch (error) {
+      console.error('❌ Error loading dummy data:', error);
+      setIsLoadingDummyData(false);
+      showErrorMessage('Failed to load dummy data');
+    }
+  }, [setValue]);
 
   // Initialize wallet on mount
   React.useEffect(() => {
@@ -112,6 +160,11 @@ export default function CreateIdentity() {
     };
     init();
   }, []);
+
+  // Load random dummy data on mount
+  React.useEffect(() => {
+    loadDummyData();
+  }, [loadDummyData]);
 
   const onSubmit = (data: FormType) => {
     if (!walletAddress) {
@@ -180,6 +233,17 @@ export default function CreateIdentity() {
       <FocusAwareStatusBar />
       <ScrollView>
         <View className="flex-1 p-4">
+          <View className="mb-4">
+            <Button
+              label={
+                isLoadingDummyData ? 'Loading...' : 'Load Random Test Data'
+              }
+              onPress={loadDummyData}
+              variant="secondary"
+              disabled={isLoadingDummyData}
+              testID="load-dummy-data-button"
+            />
+          </View>
           <ControlledInput
             name="firstName"
             label="First Name"

@@ -21,6 +21,7 @@ type StandaloneScanRequest = {
   requestId?: string; // Optional request identifier
 };
 
+/* eslint-disable max-lines-per-function */
 export default function Scan() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -30,6 +31,15 @@ export default function Scan() {
   }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = React.useState(false);
+  const [hasCredential, setHasCredential] = React.useState<boolean | null>(
+    null
+  );
+
+  // Check if user has a credential on mount
+  React.useEffect(() => {
+    const credential = credentialStorage.getCredential();
+    setHasCredential(!!credential);
+  }, []);
 
   /**
    * Handle CardlessID Challenge Verification (Centralized Mode)
@@ -162,17 +172,13 @@ export default function Scan() {
 
         const personalData = credentialStorage.getPersonalData();
         if (!personalData) {
-          Alert.alert(
-            'No Credential',
-            'Please verify your identity first.',
-            [
-              {
-                text: 'Verify Identity',
-                onPress: () => router.push('/verify-identity'),
-              },
-              { text: 'Cancel', onPress: () => setScanned(false) },
-            ]
-          );
+          Alert.alert('No Credential', 'Please verify your identity first.', [
+            {
+              text: 'Verify Identity',
+              onPress: () => router.push('/verify-identity'),
+            },
+            { text: 'Cancel', onPress: () => setScanned(false) },
+          ]);
           return;
         }
 
@@ -424,6 +430,56 @@ export default function Scan() {
           </Text>
           <Button label="Grant Camera Permission" onPress={requestPermission} />
         </View>
+      </View>
+    );
+  }
+
+  // Show explainer if no credential
+  if (hasCredential === false) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <FocusAwareStatusBar />
+        <View className="w-full max-w-md items-center rounded-lg border-2 border-blue-300 bg-white p-6 dark:border-blue-700 dark:bg-gray-800">
+          <Text className="mb-4 text-center text-3xl">📱</Text>
+          <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
+            Verify Your Identity First
+          </Text>
+          <Text className="mb-6 text-center text-base text-gray-700 dark:text-gray-300">
+            Before you can use the QR code scanner for age verification, you
+            need to verify your identity and create your decentralized ID.
+          </Text>
+
+          <View className="mb-6 w-full rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+            <Text className="mb-2 font-semibold text-blue-900 dark:text-blue-200">
+              What you&apos;ll need:
+            </Text>
+            <Text className="text-sm text-blue-800 dark:text-blue-300">
+              • A government-issued ID (driver&apos;s license or passport)
+            </Text>
+            <Text className="text-sm text-blue-800 dark:text-blue-300">
+              • A selfie for identity verification
+            </Text>
+            <Text className="text-sm text-blue-800 dark:text-blue-300">
+              • About 2-3 minutes to complete
+            </Text>
+          </View>
+
+          <Button
+            label="Verify Now"
+            onPress={() => router.push('/(app)/custom-verify')}
+            testID="verify-now-button"
+          />
+        </View>
+      </View>
+    );
+  }
+
+  // Still loading credential check
+  if (hasCredential === null) {
+    return (
+      <View className="flex-1 items-center justify-center p-4">
+        <FocusAwareStatusBar />
+        <Text>Loading...</Text>
       </View>
     );
   }
