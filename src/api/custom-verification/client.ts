@@ -9,18 +9,28 @@ export const customVerificationClient = axios.create({
 // Add request interceptor for debugging
 customVerificationClient.interceptors.request.use(
   (config) => {
+    const isFormData = config.data instanceof FormData;
+
     console.log('🔵 Custom Verification Request:', {
       method: config.method?.toUpperCase(),
       url: (config.baseURL || '') + (config.url || ''),
-      data: config.data
-        ? {
-            ...config.data,
-            image: config.data.image
-              ? `[base64 image: ${config.data.image.substring(0, 50)}...]`
-              : undefined,
-          }
-        : undefined,
-      headers: config.headers,
+      data: isFormData
+        ? '[FormData - check network tab for details]'
+        : config.data
+          ? {
+              ...config.data,
+              image: config.data.image
+                ? `[base64 image: ${config.data.image.substring(0, 50)}...]`
+                : undefined,
+              backImage: config.data.backImage
+                ? `[base64 image: ${config.data.backImage.substring(0, 50)}...]`
+                : undefined,
+              idPhoto: config.data.idPhoto
+                ? `[base64 image: ${config.data.idPhoto.substring(0, 50)}...]`
+                : undefined,
+            }
+          : undefined,
+      contentType: config.headers?.['Content-Type'],
     });
     return config;
   },

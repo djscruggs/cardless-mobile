@@ -12,16 +12,32 @@ export type DirectCredentialRequest = {
   state: string; // US state code
 };
 
-// Verification-based credential request (new flow)
+// Verification-based credential request (legacy - session ID only)
 export type VerificationCredentialRequest = {
   verificationSessionId: string;
   walletAddress: string;
 };
 
+// Token-based credential request (new secure flow with data integrity verification)
+export type TokenBasedCredentialRequest = {
+  verificationToken: string; // REQUIRED - from upload-id response
+  walletAddress: string;
+  // Identity data (for server-side hash verification)
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  birthDate: string;
+  governmentId: string;
+  idType: 'drivers_license' | 'passport' | 'government_id';
+  state?: string;
+  expirationDate?: string;
+};
+
 // Union type for credential requests
 export type CredentialRequest =
   | DirectCredentialRequest
-  | VerificationCredentialRequest;
+  | VerificationCredentialRequest
+  | TokenBasedCredentialRequest;
 
 export type PersonalData = {
   firstName: string;
@@ -31,6 +47,56 @@ export type PersonalData = {
   governmentId: string;
   idType: IdType;
   state: string;
+};
+
+export type FraudDetection = {
+  performed: boolean;
+  passed: boolean;
+  method: string;
+  provider: string;
+  signals: { type: string; result: string }[];
+};
+
+export type DocumentAnalysis = {
+  provider: string;
+  bothSidesAnalyzed: boolean;
+  lowConfidenceFields: string[];
+  qualityLevel: 'high' | 'medium' | 'low';
+};
+
+export type BiometricVerification = {
+  performed: boolean;
+  faceMatch: {
+    confidence: number;
+    provider: string;
+  };
+  liveness: {
+    confidence: number;
+    provider: string;
+  };
+};
+
+export type Evidence = {
+  type: string[];
+  verifier: string;
+  evidenceDocument: string;
+  subjectPresence: string;
+  documentPresence: string;
+  verificationMethod: string;
+  fraudDetection: FraudDetection;
+  documentAnalysis: DocumentAnalysis;
+  biometricVerification: BiometricVerification;
+};
+
+export type VerificationQuality = {
+  level: 'high' | 'medium' | 'low';
+  fraudCheckPassed: boolean;
+  extractionMethod: string;
+  bothSidesProcessed: boolean;
+  lowConfidenceFields: string[];
+  fraudSignals: { type: string; result: string }[];
+  faceMatchConfidence: number;
+  livenessConfidence: number;
 };
 
 export type VerifiableCredential = {
@@ -52,6 +118,7 @@ export type VerifiableCredential = {
     'cardlessid:idType': IdType;
     'cardlessid:state': string;
   };
+  evidence?: Evidence[];
   proof: {
     type: string;
     created: string;
@@ -64,6 +131,7 @@ export type VerifiableCredential = {
 export type CredentialResponse = {
   credential: VerifiableCredential;
   personalData: PersonalData;
+  verificationQuality?: VerificationQuality;
   nft?: {
     assetId: string; // Backend sends as string due to JSON.stringify issues with large numbers
     requiresOptIn: boolean;

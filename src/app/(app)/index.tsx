@@ -22,6 +22,10 @@ export default function MyID() {
     React.useState<ReturnType<typeof credentialStorage.getCredential>>(null);
   const [personalData, setPersonalData] =
     React.useState<ReturnType<typeof credentialStorage.getPersonalData>>(null);
+  const [verificationQuality, setVerificationQuality] =
+    React.useState<ReturnType<typeof credentialStorage.getVerificationQuality>>(
+      null
+    );
   const [blockchain, setBlockchain] =
     React.useState<ReturnType<typeof credentialStorage.getBlockchain>>(null);
   const [duplicateDetection, setDuplicateDetection] =
@@ -35,6 +39,7 @@ export default function MyID() {
     React.useCallback(() => {
       setCredential(credentialStorage.getCredential());
       setPersonalData(credentialStorage.getPersonalData());
+      setVerificationQuality(credentialStorage.getVerificationQuality());
       setBlockchain(credentialStorage.getBlockchain());
       setDuplicateDetection(credentialStorage.getDuplicateDetection());
     }, [])
@@ -56,6 +61,7 @@ export default function MyID() {
     await credentialStorage.clearCredential();
     setCredential(null);
     setPersonalData(null);
+    setVerificationQuality(null);
     setBlockchain(null);
     setDuplicateDetection(null);
   };
@@ -82,6 +88,7 @@ export default function MyID() {
     const jsonData = {
       credential,
       personalData,
+      verificationQuality,
       blockchain,
       duplicateDetection,
     };
