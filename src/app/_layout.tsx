@@ -1,3 +1,8 @@
+/* eslint-disable max-lines-per-function */
+// Import crypto polyfill first (required for algosdk)
+import 'react-native-get-random-values';
+// Import URL polyfill for React Native
+import 'react-native-url-polyfill/auto';
 // Import  global CSS file
 import '../../global.css';
 
@@ -95,9 +100,9 @@ export default function RootLayout() {
         // Mode 3: Standalone (backward compatibility)
         else if (encodedData) {
           try {
-            // Decode the base64 data
+            // Decode the base64 data - just validate it's valid JSON
             const decodedData = atob(encodedData);
-            const _scanRequest = JSON.parse(decodedData);
+            JSON.parse(decodedData);
 
             Alert.alert(
               'Age Verification Request',

@@ -10,7 +10,7 @@ export const useUploadSelfie = createMutation<Response, Variables, Error>({
   mutationFn: async (variables) => {
     const formData = new FormData();
     formData.append('sessionId', variables.sessionId);
-    formData.append('image', variables.image);
+    formData.append('selfie', variables.image);
     formData.append('idPhoto', variables.idPhoto);
 
     const response = await customVerificationClient.post<Response>(

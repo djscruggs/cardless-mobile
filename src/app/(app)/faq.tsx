@@ -52,8 +52,11 @@ export default function FAQ() {
   const [isVerified, setIsVerified] = React.useState(false);
 
   React.useEffect(() => {
-    const credential = credentialStorage.getCredential();
-    setIsVerified(credential !== null);
+    const checkVerification = async () => {
+      const credential = await credentialStorage.getCredential();
+      setIsVerified(credential !== null);
+    };
+    checkVerification();
   }, []);
 
   const faqDataWithVerification = React.useMemo(() => {

@@ -19,29 +19,40 @@ import { credentialStorage } from '@/lib';
 export default function MyID() {
   const router = useRouter();
   const [credential, setCredential] =
-    React.useState<ReturnType<typeof credentialStorage.getCredential>>(null);
+    React.useState<Awaited<ReturnType<typeof credentialStorage.getCredential>>>(
+      null
+    );
   const [personalData, setPersonalData] =
-    React.useState<ReturnType<typeof credentialStorage.getPersonalData>>(null);
+    React.useState<
+      Awaited<ReturnType<typeof credentialStorage.getPersonalData>>
+    >(null);
   const [verificationQuality, setVerificationQuality] =
-    React.useState<ReturnType<typeof credentialStorage.getVerificationQuality>>(
-      null
-    );
+    React.useState<
+      Awaited<ReturnType<typeof credentialStorage.getVerificationQuality>>
+    >(null);
   const [blockchain, setBlockchain] =
-    React.useState<ReturnType<typeof credentialStorage.getBlockchain>>(null);
-  const [duplicateDetection, setDuplicateDetection] =
-    React.useState<ReturnType<typeof credentialStorage.getDuplicateDetection>>(
+    React.useState<Awaited<ReturnType<typeof credentialStorage.getBlockchain>>>(
       null
     );
+  const [duplicateDetection, setDuplicateDetection] =
+    React.useState<
+      Awaited<ReturnType<typeof credentialStorage.getDuplicateDetection>>
+    >(null);
   const [showJSONModal, setShowJSONModal] = React.useState(false);
   const isDevelopment = Env.APP_ENV !== 'production';
 
   useFocusEffect(
     React.useCallback(() => {
-      setCredential(credentialStorage.getCredential());
-      setPersonalData(credentialStorage.getPersonalData());
-      setVerificationQuality(credentialStorage.getVerificationQuality());
-      setBlockchain(credentialStorage.getBlockchain());
-      setDuplicateDetection(credentialStorage.getDuplicateDetection());
+      const loadCredentials = async () => {
+        setCredential(await credentialStorage.getCredential());
+        setPersonalData(await credentialStorage.getPersonalData());
+        setVerificationQuality(
+          await credentialStorage.getVerificationQuality()
+        );
+        setBlockchain(await credentialStorage.getBlockchain());
+        setDuplicateDetection(await credentialStorage.getDuplicateDetection());
+      };
+      loadCredentials();
     }, [])
   );
 

@@ -6,7 +6,7 @@ import { useTransferNFT } from '@/api';
 import { showErrorMessage } from '@/components/ui/utils';
 
 import { optInToAsset } from './algorand';
-import { credentialStorage } from './credential-storage';
+import { credentialStorage } from './secure-credential-storage';
 
 type NFTWorkflowState =
   | 'idle'

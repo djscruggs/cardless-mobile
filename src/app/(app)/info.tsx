@@ -16,8 +16,11 @@ export default function Onboarding() {
   const [hasCredential, setHasCredential] = React.useState(false);
 
   React.useEffect(() => {
-    const credential = credentialStorage.getCredential();
-    setHasCredential(credential !== null);
+    const checkCredential = async () => {
+      const credential = await credentialStorage.getCredential();
+      setHasCredential(credential !== null);
+    };
+    checkCredential();
   }, []);
   return (
     <View className="flex h-full items-center justify-start px-4">

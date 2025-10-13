@@ -37,8 +37,11 @@ export default function Scan() {
 
   // Check if user has a credential on mount
   React.useEffect(() => {
-    const credential = credentialStorage.getCredential();
-    setHasCredential(!!credential);
+    const checkCredential = async () => {
+      const credential = await credentialStorage.getCredential();
+      setHasCredential(!!credential);
+    };
+    checkCredential();
   }, []);
 
   /**
@@ -61,7 +64,7 @@ export default function Scan() {
         }
 
         // 2. Check user credentials
-        const personalData = credentialStorage.getPersonalData();
+        const personalData = await credentialStorage.getPersonalData();
         if (!personalData) {
           Alert.alert(
             'No Credential',
@@ -170,7 +173,7 @@ export default function Scan() {
           return;
         }
 
-        const personalData = credentialStorage.getPersonalData();
+        const personalData = await credentialStorage.getPersonalData();
         if (!personalData) {
           Alert.alert('No Credential', 'Please verify your identity first.', [
             {
@@ -254,8 +257,8 @@ export default function Scan() {
         return;
       }
 
-      const credential = credentialStorage.getCredential();
-      const personalData = credentialStorage.getPersonalData();
+      const credential = await credentialStorage.getCredential();
+      const personalData = await credentialStorage.getPersonalData();
 
       if (!credential || !personalData) {
         Alert.alert(

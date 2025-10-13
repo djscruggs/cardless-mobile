@@ -107,10 +107,45 @@ src/
 └── lib/              # Utilities and storage
 ```
 
+## Troubleshooting
+
+### React Native Worklets Error
+
+If you encounter a build error like:
+
+```
+'RNWorkletsSpec.h' file not found
+```
+
+This happens when the New Architecture codegen files aren't properly generated. To fix:
+
+**Solution 1: Clean and rebuild CocoaPods (Recommended)**
+
+```bash
+# Set proper encoding
+export LANG=en_US.UTF-8
+
+# Clean iOS build
+rm -rf ios/build
+rm -rf ~/Library/Developer/Xcode/DerivedData/CardlessID-*
+
+# Reinstall pods
+cd ios && pod install && cd ..
+
+# Rebuild
+pnpm ios
+```
+
+**Solution 2: Run postinstall script**
+
+```bash
+node scripts/setup-worklets.js
+```
+
+**Note:** To avoid encoding issues in the future, add `export LANG=en_US.UTF-8` to your `~/.zshrc` or `~/.bashrc` file.
+
 ## Future Plans
 
-- Replace mock provider with real identity verification service (iDenfy, Stripe Identity, etc.)
-- Mainnet deployment
 - Additional credential types
 - Multi-language support
 
