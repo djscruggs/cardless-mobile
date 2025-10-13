@@ -82,6 +82,9 @@ export default function VerifyIdentity() {
     requiresOptIn: boolean;
   } | null>(null);
   const [walletAddress, setWalletAddress] = React.useState<string | null>(null);
+  const [privateKey, setPrivateKey] = React.useState<Uint8Array | undefined>(
+    undefined
+  );
 
   const { control, handleSubmit, setValue } = useForm<FormType>({
     resolver: zodResolver(schema),
@@ -99,7 +102,7 @@ export default function VerifyIdentity() {
   const nftWorkflow = useNFTWorkflow({
     assetId: nftData?.assetId,
     walletAddress: walletAddress || '',
-    privateKey: wallet.getWalletPrivateKey() || undefined,
+    privateKey,
     onComplete: () => {
       showMessage({
         message: 'Identity verified and credential issued!',
@@ -127,13 +130,17 @@ export default function VerifyIdentity() {
         Env.DEV_WALLET_MNEMONIC
       ) {
         console.log('🔐 Using development wallet from env');
-        // Save dev wallet to storage so getWalletPrivateKey() works
+        // Save dev wallet to storage
         await wallet.saveWallet(
           Env.DEV_WALLET_ADDRESS,
           Env.DEV_WALLET_MNEMONIC
         );
         setWalletAddress(Env.DEV_WALLET_ADDRESS);
         console.log('✅ Wallet set to:', Env.DEV_WALLET_ADDRESS);
+
+        // Load private key
+        const key = await wallet.getWalletPrivateKey();
+        setPrivateKey(key || undefined);
       } else {
         // Otherwise, initialize/create wallet
         console.log('🔐 Generating new wallet...');
@@ -141,6 +148,10 @@ export default function VerifyIdentity() {
         console.log('🔐 Wallet initialized:', address);
         setWalletAddress(address);
         console.log('✅ Wallet state updated');
+
+        // Load private key
+        const key = await wallet.getWalletPrivateKey();
+        setPrivateKey(key || undefined);
       }
     };
     init();

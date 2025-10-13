@@ -4,6 +4,6 @@ export * from './hooks';
 export * from './i18n';
 export * from './secure-credential-storage';
 export * from './secure-document-storage';
+export * from './secure-wallet-storage';
 export * from './use-nft-workflow';
 export * from './utils';
-export * from './wallet';

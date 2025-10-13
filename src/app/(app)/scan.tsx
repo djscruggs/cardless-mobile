@@ -117,7 +117,7 @@ export default function Scan() {
               text: 'Send Verification',
               onPress: async () => {
                 try {
-                  const walletAddress = wallet.getWalletAddress();
+                  const walletAddress = await wallet.getWalletAddress();
                   if (!walletAddress) {
                     throw new Error('No wallet address');
                   }
@@ -208,7 +208,7 @@ export default function Scan() {
               text: 'Send Verification',
               onPress: async () => {
                 try {
-                  const walletAddress = wallet.getWalletAddress();
+                  const walletAddress = await wallet.getWalletAddress();
                   if (!walletAddress) throw new Error('No wallet address');
 
                   await respondToSession({
@@ -275,7 +275,7 @@ export default function Scan() {
         return;
       }
 
-      const walletAddress = wallet.getWalletAddress();
+      const walletAddress = await wallet.getWalletAddress();
       if (!walletAddress) {
         Alert.alert('Error', 'Wallet not found', [
           { text: 'OK', onPress: () => setScanned(false) },
