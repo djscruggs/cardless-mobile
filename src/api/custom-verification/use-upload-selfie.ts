@@ -14,7 +14,7 @@ export const useUploadSelfie = createMutation<Response, Variables, Error>({
     formData.append('idPhoto', variables.idPhoto);
 
     const response = await customVerificationClient.post<Response>(
-      '/api/custom-verification/upload-selfie',
+      '/api/verify/upload-selfie',
       formData,
       {
         headers: {
