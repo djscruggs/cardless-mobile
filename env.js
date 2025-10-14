@@ -42,8 +42,8 @@ require('dotenv').config({
 
 // TODO: Replace these values with your own
 
-const BUNDLE_ID = 'com.cardlessid'; // ios bundle id
-const PACKAGE = 'com.cardlessid'; // android package name
+const BUNDLE_ID = 'org.cardlessid'; // ios bundle id
+const PACKAGE = 'org.cardlessid'; // android package name
 const NAME = 'Cardless ID'; // app name
 const EXPO_ACCOUNT_OWNER = 'djscruggs'; // expo account owner
 const EAS_PROJECT_ID = '75e383ae-2e49-499b-a75a-ba70d5b2f19f'; // eas project id
@@ -88,14 +88,11 @@ const client = z.object({
 
   // ADD YOUR CLIENT ENV VARS HERE
   API_URL: z.string(),
-  CREDENTIAL_API_URL: z.string(),
+  CARDLESS_API_KEY: z.string(),
   MOCK_PROVIDER_API_URL: z.string(),
-  DOCUMENT_AI_ENDPOINT: z.string(),
-  ALGORAND_NETWORK: z.enum(['testnet', 'mainnet']).optional(),
+  ALGORAND_NETWORK: z.enum(['localnet', 'testnet', 'mainnet']).optional(),
   DEV_WALLET_ADDRESS: z.string().optional(),
   DEV_WALLET_MNEMONIC: z.string().optional(),
-  VAR_NUMBER: z.number(),
-  VAR_BOOL: z.boolean(),
 });
 
 const buildTime = z.object({
@@ -118,14 +115,11 @@ const _clientEnv = {
 
   // ADD YOUR ENV VARS HERE TOO
   API_URL: process.env.API_URL,
-  CREDENTIAL_API_URL: process.env.CREDENTIAL_API_URL,
+  CARDLESS_API_KEY: process.env.CARDLESS_API_KEY,
   MOCK_PROVIDER_API_URL: process.env.MOCK_PROVIDER_API_URL,
-  DOCUMENT_AI_ENDPOINT: process.env.DOCUMENT_AI_ENDPOINT,
   ALGORAND_NETWORK: process.env.ALGORAND_NETWORK,
   DEV_WALLET_ADDRESS: process.env.DEV_WALLET_ADDRESS,
   DEV_WALLET_MNEMONIC: process.env.DEV_WALLET_MNEMONIC,
-  VAR_NUMBER: Number(process.env.VAR_NUMBER),
-  VAR_BOOL: process.env.VAR_BOOL === 'true',
 };
 
 /**

@@ -16,6 +16,9 @@ import axios from 'axios';
 
 const challengeClient = axios.create({
   baseURL: Env.API_URL,
+  headers: {
+    'X-API-Key': Env.CARDLESS_API_KEY,
+  },
 });
 
 export type ChallengeDetails = {

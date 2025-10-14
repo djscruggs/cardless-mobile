@@ -3,9 +3,12 @@ import type { AxiosError } from 'axios';
 import axios from 'axios';
 import { createMutation } from 'react-query-kit';
 
-// Create a separate client for credential API since it has different base URL
+// Create a client for credential API
 const credentialClient = axios.create({
-  baseURL: Env.CREDENTIAL_API_URL,
+  baseURL: Env.API_URL,
+  headers: {
+    'X-API-Key': Env.CARDLESS_API_KEY,
+  },
 });
 
 // Add request interceptor for debugging

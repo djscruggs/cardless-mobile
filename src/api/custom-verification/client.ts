@@ -1,9 +1,12 @@
 import { Env } from '@env';
 import axios from 'axios';
 
-// Create a client for custom verification API - uses same base URL as credentials
+// Create a client for custom verification API
 export const customVerificationClient = axios.create({
-  baseURL: Env.CREDENTIAL_API_URL,
+  baseURL: Env.API_URL,
+  headers: {
+    'X-API-Key': Env.CARDLESS_API_KEY,
+  },
 });
 
 // Add request interceptor for debugging

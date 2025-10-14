@@ -7,7 +7,10 @@ import type { CredentialRequest, CredentialResponse } from './types';
 
 // Create a separate client for credential API since it has different base URL
 const credentialClient = axios.create({
-  baseURL: Env.CREDENTIAL_API_URL,
+  baseURL: Env.API_URL,
+  headers: {
+    'X-API-Key': Env.CARDLESS_API_KEY,
+  },
 });
 
 // Add request interceptor for debugging

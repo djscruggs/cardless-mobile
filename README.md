@@ -66,11 +66,12 @@ The app uses environment variables for API endpoints. Configure them in the appr
 
 **Environment Variables:**
 
-- `CREDENTIAL_API_URL` - Main credential/verification server (default: `http://192.168.0.12:5173`)
-- `MOCK_PROVIDER_API_URL` - Mock identity provider server (default: `http://192.168.0.12:3001`)
-- `ALGORAND_NETWORK` - Algorand network (`testnet` or `mainnet`)
+Copy `.env.example` to `.env.local` and configure:
 
-Update your `.env.local` file with your local server IP address if different from the defaults.
+- `API_URL` - CardlessID API endpoint
+- `CARDLESS_API_KEY` - **Required** API key for CardlessID API authentication
+- `MOCK_PROVIDER_API_URL` - Mock identity provider server (for testing, default: `http://localhost:3001`)
+- `ALGORAND_NETWORK` - Algorand network (`localnet`, `testnet`, or `mainnet`)
 
 ## Documentation
 
