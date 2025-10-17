@@ -16,7 +16,7 @@ export const useUploadId = createMutation<Response, Variables, Error>({
     formData.append('mimeType', variables.mimeType);
 
     const response = await customVerificationClient.post<Response>(
-      '/api/verify/upload-id',
+      '/api/verification/upload-id',
       formData,
       {
         headers: {

@@ -59,7 +59,7 @@ The custom verification platform provides a complete end-to-end identity verific
        ├──5. Upload Selfie
        │
 ┌──────▼──────────────────────┐
-│  /api/verify/  │
+│  /api/verification/  │
 │  upload-selfie               │
 └──────┬──────────────────────┘
        │
@@ -175,7 +175,7 @@ mkdir -p storage/photos
 
 ### Upload ID Photos
 
-**POST** `/api/verify/upload-id`
+**POST** `/api/verification/upload-id`
 
 Uploads and processes ID photos (front required, back recommended) with fraud detection (Google Document AI) and text extraction (AWS Textract).
 
@@ -256,7 +256,7 @@ mimeType: string (optional - defaults to 'image/jpeg')
 
 ### Upload Selfie
 
-**POST** `/api/verify/upload-selfie`
+**POST** `/api/verification/upload-selfie`
 
 Uploads a selfie, performs liveness detection, and compares it with the ID photo using AWS Rekognition.
 
@@ -300,7 +300,7 @@ image: string (base64 data URL)
 
 ### Get Session Status
 
-**GET** `/api/verify/session/:sessionId`
+**GET** `/api/verification/session/:sessionId`
 
 **SECURITY:** This endpoint returns only session metadata, NOT verified identity data. Verified data is transient and only accessible during credential creation with a valid `verificationToken`.
 
@@ -363,7 +363,7 @@ This section shows the exact steps external clients (mobile wallets, web apps) n
 └──────┬──────┘
        │
        ├──1. Upload ID Photos (front + back)
-       │   POST /api/verify/upload-id
+       │   POST /api/verification/upload-id
        │   • Send: front image (required), back image (optional)
        │   • Receive: verificationToken, sessionId, extractedData
        │
@@ -371,7 +371,7 @@ This section shows the exact steps external clients (mobile wallets, web apps) n
        │   • Display: firstName, lastName, birthDate, etc.
        │
        ├──3. Upload Selfie + ID Photo
-       │   POST /api/verify/upload-selfie
+       │   POST /api/verification/upload-selfie
        │   • Receive: match result, confidence
        │
        ├──4. If match successful, request credential
@@ -384,7 +384,7 @@ This section shows the exact steps external clients (mobile wallets, web apps) n
 
 ### Step 1: Upload ID Photos (Front & Back)
 
-**Endpoint:** `POST /api/verify/upload-id`
+**Endpoint:** `POST /api/verification/upload-id`
 
 **Request (FormData):**
 
@@ -394,7 +394,7 @@ formData.append('image', frontImageBase64); // Required: front of ID (base64)
 formData.append('backImage', backImageBase64); // Recommended: back of ID (base64)
 formData.append('mimeType', 'image/jpeg'); // Optional: defaults to image/jpeg
 
-fetch('/api/verify/upload-id', {
+fetch('/api/verification/upload-id', {
   method: 'POST',
   body: formData,
 });
@@ -452,7 +452,7 @@ sessionStorage.setItem('extractedData', JSON.stringify(extractedData));
 
 **⚠️ IMPORTANT: Do NOT fetch session data again**
 
-The session endpoint (`/api/verify/session/:sessionId`) returns only metadata, NOT identity data. The `extractedData` from the upload response is the ONLY time verified data is exposed. Store it client-side for display.
+The session endpoint (`/api/verification/session/:sessionId`) returns only metadata, NOT identity data. The `extractedData` from the upload response is the ONLY time verified data is exposed. Store it client-side for display.
 
 **Response (Fraud Detected - 400):**
 
@@ -493,7 +493,7 @@ const extractedData = JSON.parse(sessionStorage.getItem('extractedData'));
 
 ### Step 3: Upload Selfie for Face Comparison
 
-**Endpoint:** `POST /api/verify/upload-selfie`
+**Endpoint:** `POST /api/verification/upload-selfie`
 
 **Request (FormData):**
 
@@ -503,7 +503,7 @@ formData.append('sessionId', sessionId); // From Step 1
 formData.append('image', selfieBase64); // User's selfie
 formData.append('idPhoto', frontImageBase64); // ID photo from Step 1 (stored client-side)
 
-fetch('/api/verify/upload-selfie', {
+fetch('/api/verification/upload-selfie', {
   method: 'POST',
   body: formData,
 });
@@ -747,7 +747,7 @@ class CardlessIDClient {
     }
     formData.append('mimeType', 'image/jpeg');
 
-    const response = await fetch(`${this.baseUrl}/api/verify/upload-id`, {
+    const response = await fetch(`${this.baseUrl}/api/verification/upload-id`, {
       method: 'POST',
       body: formData,
     });
@@ -773,10 +773,13 @@ class CardlessIDClient {
     formData.append('image', selfieImage);
     formData.append('idPhoto', this.idPhotoBase64!);
 
-    const response = await fetch(`${this.baseUrl}/api/verify/upload-selfie`, {
-      method: 'POST',
-      body: formData,
-    });
+    const response = await fetch(
+      `${this.baseUrl}/api/verification/upload-selfie`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
 
     const data = await response.json();
     return data.match === true;

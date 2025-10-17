@@ -43,14 +43,14 @@ export function ObfuscatedText({
   return (
     <View>
       <Text
-        className="text-base font-semibold dark:text-white"
+        className="text-xl font-semibold dark:text-white"
         testID={testID ? `${testID}-value` : undefined}
       >
         {isRevealed ? value : obfuscatedValue}
       </Text>
       <View className="mt-1 flex-row gap-3">
         <Pressable onPress={handleToggleView}>
-          <Text className="text-sm text-blue-600 dark:text-blue-400">
+          <Text className="mr-4 text-sm text-blue-600 dark:text-blue-400">
             {isRevealed ? 'hide' : 'view'}
           </Text>
         </Pressable>

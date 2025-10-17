@@ -39,8 +39,10 @@ export default function MyID() {
       Awaited<ReturnType<typeof credentialStorage.getDuplicateDetection>>
     >(null);
   const [showJSONModal, setShowJSONModal] = React.useState(false);
+  const [isDeveloperInfoExpanded, setIsDeveloperInfoExpanded] =
+    React.useState(true);
   const isDevelopment = Env.APP_ENV !== 'production';
-
+  console.log(credential);
   useFocusEffect(
     React.useCallback(() => {
       const loadCredentials = async () => {
@@ -158,7 +160,7 @@ export default function MyID() {
       </Modal>
       <ScrollView>
         <View className="flex-1 items-center p-4">
-          <View className="w-full max-w-md rounded-lg border-2 border-gray-300 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <View className="w-full max-w-md content-stretch rounded-lg border-2 border-gray-300 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-800">
             {credential && personalData ? (
               <>
                 <View className="space-y-6">
@@ -175,7 +177,7 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Date of Birth
                       </Text>
-                      <Text className="text-base font-semibold dark:text-white">
+                      <Text className="text-xl font-semibold dark:text-white">
                         {formatDate(personalData.birthDate)}
                       </Text>
                     </View>
@@ -184,7 +186,7 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         ID Type
                       </Text>
-                      <Text className="text-base font-semibold dark:text-white">
+                      <Text className="text-xl font-semibold dark:text-white">
                         {personalData.idType === 'government_id'
                           ? 'Government ID'
                           : 'Passport'}
@@ -195,7 +197,7 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         ID Number
                       </Text>
-                      <Text className="mt-5">
+                      <Text className="mt-5 text-xl">
                         <ObfuscatedText
                           value={personalData.governmentId}
                           testID="government-id"
@@ -207,7 +209,7 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         State
                       </Text>
-                      <Text className="text-base font-semibold dark:text-white">
+                      <Text className="text-xl font-semibold dark:text-white">
                         {personalData.state}
                       </Text>
                     </View>
@@ -216,7 +218,7 @@ export default function MyID() {
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Issued
                       </Text>
-                      <Text className="text-base font-semibold dark:text-white">
+                      <Text className="text-xl font-semibold dark:text-white">
                         {formatDate(credential.issuanceDate)}
                       </Text>
                     </View>
@@ -229,42 +231,55 @@ export default function MyID() {
                 </View>
 
                 {isDevelopment && (
-                  <View className="mt-6 space-y-3 border-t border-gray-200 bg-red-50 p-4 dark:border-gray-700">
-                    <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
-                      Developer Info
-                    </Text>
-                    {duplicateDetection && (
-                      <View className="mb-4 rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900">
-                        <Text className="text-center font-semibold dark:text-white">
-                          {duplicateDetection.isDuplicate
-                            ? `⚠️ ${duplicateDetection.duplicateCount} Duplicate${duplicateDetection.duplicateCount > 1 ? 's' : ''} Found`
-                            : '✓ No Duplicates'}
-                        </Text>
-                        <Text className="mt-1 text-center text-sm dark:text-gray-300">
-                          {duplicateDetection.message}
-                        </Text>
+                  <View className="mt-6 border-t border-gray-200 bg-red-50 p-4 dark:border-gray-700">
+                    <Button
+                      label={
+                        isDeveloperInfoExpanded
+                          ? '▼ Developer Info'
+                          : '▶ Developer Info'
+                      }
+                      variant="secondary"
+                      onPress={() =>
+                        setIsDeveloperInfoExpanded(!isDeveloperInfoExpanded)
+                      }
+                      testID="toggle-developer-info"
+                    />
+                    {isDeveloperInfoExpanded && (
+                      <View className="mt-4 space-y-3">
+                        {duplicateDetection && (
+                          <View className="mb-4 rounded-lg bg-yellow-100 p-3 dark:bg-yellow-900">
+                            <Text className="text-center font-semibold dark:text-white">
+                              {duplicateDetection.isDuplicate
+                                ? `⚠️ ${duplicateDetection.duplicateCount} Duplicate${duplicateDetection.duplicateCount > 1 ? 's' : ''} Found`
+                                : '✓ No Duplicates'}
+                            </Text>
+                            <Text className="mt-1 text-center text-sm dark:text-gray-300">
+                              {duplicateDetection.message}
+                            </Text>
+                          </View>
+                        )}
+                        {blockchain?.transaction?.explorerUrl && (
+                          <Button
+                            label="View Blockchain Transaction"
+                            variant="default"
+                            onPress={handleViewTransaction}
+                            testID="view-transaction-button"
+                          />
+                        )}
+                        <Button
+                          label="View Raw JSON"
+                          variant="default"
+                          onPress={handleViewRawJSON}
+                          testID="view-json-button"
+                        />
+                        <Button
+                          label="Clear Credential"
+                          variant="destructive"
+                          onPress={handleClearCredential}
+                          testID="clear-credential-button"
+                        />
                       </View>
                     )}
-                    {blockchain?.transaction?.explorerUrl && (
-                      <Button
-                        label="View Blockchain Transaction"
-                        variant="default"
-                        onPress={handleViewTransaction}
-                        testID="view-transaction-button"
-                      />
-                    )}
-                    <Button
-                      label="View Raw JSON"
-                      variant="default"
-                      onPress={handleViewRawJSON}
-                      testID="view-json-button"
-                    />
-                    <Button
-                      label="Clear Credential"
-                      variant="destructive"
-                      onPress={handleClearCredential}
-                      testID="clear-credential-button"
-                    />
                   </View>
                 )}
               </>
@@ -275,7 +290,7 @@ export default function MyID() {
                     No ID Installed
                   </Text>
                   <Text className="mt-2 text-center text-sm text-gray-600 dark:text-gray-100">
-                    Click Verify Identitiy to get started
+                    Click Verify Identity to get started
                   </Text>
                 </View>
                 <View className="mt-6 space-y-3">
