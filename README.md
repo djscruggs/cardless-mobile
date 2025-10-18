@@ -4,7 +4,7 @@
 
 ## Overview
 
-A React Native mobile wallet application for storing and presenting decentralized identity credentials issued by cardlessid.org. The app enables age verification for adult websites without exposing personal information.
+A React Native mobile wallet application for storing and presenting decentralized identity credentials issued by cardlessid.org. The app enables age verification by websites without exposing personal information.
 
 ### Privacy & Data Storage
 
