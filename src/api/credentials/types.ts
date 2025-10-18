@@ -1,4 +1,4 @@
-export type IdType = 'passport' | 'government_id';
+export type IdType = 'drivers_license' | 'passport' | 'government_id';
 
 // Direct credential request (original flow - for development/testing)
 export type DirectCredentialRequest = {

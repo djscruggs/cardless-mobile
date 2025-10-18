@@ -187,9 +187,11 @@ export default function MyID() {
                         ID Type
                       </Text>
                       <Text className="text-xl font-semibold dark:text-white">
-                        {personalData.idType === 'government_id'
-                          ? 'Government ID'
-                          : 'Passport'}
+                        {personalData.idType === 'drivers_license'
+                          ? "Driver's License"
+                          : personalData.idType === 'government_id'
+                            ? 'Government ID'
+                            : 'Passport'}
                       </Text>
                     </View>
 
