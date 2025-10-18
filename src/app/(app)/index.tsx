@@ -40,7 +40,7 @@ export default function MyID() {
     >(null);
   const [showJSONModal, setShowJSONModal] = React.useState(false);
   const [isDeveloperInfoExpanded, setIsDeveloperInfoExpanded] =
-    React.useState(true);
+    React.useState(false);
   const isDevelopment = Env.APP_ENV !== 'production';
   console.log(credential);
   useFocusEffect(
@@ -182,7 +182,7 @@ export default function MyID() {
                       </Text>
                     </View>
 
-                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                    <View className="flex-row items-center justify-between border-b border-gray-200 py-3 dark:border-gray-700">
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         ID Type
                       </Text>
@@ -193,7 +193,7 @@ export default function MyID() {
                       </Text>
                     </View>
 
-                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                    <View className="flex-row items-center justify-between border-b border-gray-200 py-3 dark:border-gray-700">
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         ID Number
                       </Text>
@@ -205,7 +205,7 @@ export default function MyID() {
                       </Text>
                     </View>
 
-                    <View className="flex-row items-center justify-between border-b border-gray-200 pb-3 dark:border-gray-700">
+                    <View className="flex-row items-center justify-between border-b border-gray-200 py-3 dark:border-gray-700">
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         State
                       </Text>
@@ -214,7 +214,7 @@ export default function MyID() {
                       </Text>
                     </View>
 
-                    <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center justify-between pt-3">
                       <Text className="text-sm font-medium text-gray-600 dark:text-gray-400">
                         Issued
                       </Text>

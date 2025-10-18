@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { SplashScreen, Tabs } from 'expo-router';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Image } from 'react-native';
 
-import { useAuth, useIsFirstTime } from '@/lib';
+import { credentialStorage, useAuth, useIsFirstTime } from '@/lib';
 
 const LogoIcon = () => (
   <Image
@@ -29,10 +29,19 @@ const useSplashScreen = (status: string) => {
 export default function TabLayout() {
   const status = useAuth.use.status();
   const [isFirstTime] = useIsFirstTime();
+  const [hasCredential, setHasCredential] = useState(false);
   useSplashScreen(status);
 
+  useEffect(() => {
+    const checkCredential = async () => {
+      const credential = await credentialStorage.getCredential();
+      setHasCredential(credential !== null);
+    };
+    checkCredential();
+  }, []);
+
   return (
-    <Tabs initialRouteName={isFirstTime ? 'info' : 'index'}>
+    <Tabs initialRouteName={hasCredential || !isFirstTime ? 'index' : 'info'}>
       <Tabs.Screen
         name="index"
         options={{
