@@ -99,6 +99,12 @@ export type VerificationQuality = {
   livenessConfidence: number;
 };
 
+export type ServiceEndpoint = {
+  id: string; // e.g., '#system-attestation'
+  type: string; // e.g., 'ZkProofSystemVersion'
+  serviceEndpoint: string; // GitHub commit URL for auditability
+};
+
 export type VerifiableCredential = {
   '@context': string[];
   id: string;
@@ -119,6 +125,7 @@ export type VerifiableCredential = {
     'cardlessid:state': string;
   };
   evidence?: Evidence[];
+  service?: ServiceEndpoint[]; // Optional: Links to exact git commit for auditability and transparency
   proof: {
     type: string;
     created: string;
