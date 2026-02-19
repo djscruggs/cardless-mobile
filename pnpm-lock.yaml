@@ -38,6 +38,9 @@ importers:
       expo:
         specifier: ~53.0.12
         version: 53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      expo-camera:
+        specifier: ^17.0.8
+        version: 17.0.8(expo@53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       expo-constants:
         specifier: ~17.1.6
         version: 17.1.7(expo@53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))
@@ -110,9 +113,15 @@ importers:
       react-native-gesture-handler:
         specifier: ~2.24.0
         version: 2.24.0(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react-native-get-random-values:
+        specifier: ~1.11.0
+        version: 1.11.0(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))
       react-native-keyboard-controller:
         specifier: ^1.17.4
         version: 1.18.6(react-native-reanimated@3.17.5(@babel/core@7.28.4)(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      react-native-keychain:
+        specifier: ^9.2.3
+        version: 9.2.3
       react-native-mmkv:
         specifier: ~3.1.0
         version: 3.1.0(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
@@ -3565,6 +3574,17 @@ packages:
       react: '*'
       react-native: '*'
 
+  expo-camera@17.0.8:
+    resolution: {integrity: sha512-BIGvS+3myaYqMtk2VXWgdcOMrewH+55BttmaYqq9tv9+o5w+RAbH9wlJSt0gdaswikiyzoWT7mOnLDleYClXmw==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
+      react-native-web: '*'
+    peerDependenciesMeta:
+      react-native-web:
+        optional: true
+
   expo-constants@17.1.7:
     resolution: {integrity: sha512-byBjGsJ6T6FrLlhOBxw4EaiMXrZEn/MlUYIj/JAd+FS7ll5X/S4qVRbIimSJtdW47hXMq0zxPfJX6njtA56hHA==}
     peerDependencies:
@@ -3720,6 +3740,9 @@ packages:
   external-editor@3.1.0:
     resolution: {integrity: sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==}
     engines: {node: '>=4'}
+
+  fast-base64-decode@1.0.0:
+    resolution: {integrity: sha512-qwaScUgUGBYeDNRnbc/KyllVU88Jk1pRHPStuF/lO7B0/RTRLj7U0lkdTAutlBblY08rwZDff6tNU9cjv6j//Q==}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -5952,6 +5975,11 @@ packages:
       react: '*'
       react-native: '*'
 
+  react-native-get-random-values@1.11.0:
+    resolution: {integrity: sha512-4BTbDbRmS7iPdhYLRcz3PGFIpFJBwNZg9g42iwa2P6FOv9vZj/xJc678RZXnLNZzd0qd7Q3CCF6Yd+CU2eoXKQ==}
+    peerDependencies:
+      react-native: '>=0.56'
+
   react-native-iphone-screen-helper@2.2.1:
     resolution: {integrity: sha512-gMHawcFa9O8St9rJ6zugW55O/sM3UUTLqc4MDaZQewBTIDjfvHzLmk2A/+PxySl5ZTfv6fyIV5g+2ozLRW5kcw==}
     peerDependencies:
@@ -5975,6 +6003,10 @@ packages:
       react: '*'
       react-native: '*'
       react-native-reanimated: '>=3.0.0'
+
+  react-native-keychain@9.2.3:
+    resolution: {integrity: sha512-dbn50fk4HLr4JQ71X3j6ZSTbKv+G9s85Zv9cE2na7k7KGn1j+wxjqGTE3wG+WKB3nNEylgu/KXR99mtsC/hpRQ==}
+    engines: {node: '>=16'}
 
   react-native-mmkv@3.1.0:
     resolution: {integrity: sha512-HDh89nYVSufHMweZ3TVNUHQp2lsEh1ApaoV08bUOU1nrlmGgC3I7tGUn1Uy40Hs7yRMPKx5NWKE5Dh86jTVrwg==}
@@ -11578,6 +11610,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  expo-camera@17.0.8(expo@53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native-web@0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
+    dependencies:
+      expo: 53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+      invariant: 2.2.4
+      react: 19.0.0
+      react-native: 0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)
+    optionalDependencies:
+      react-native-web: 0.20.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+
   expo-constants@17.1.7(expo@53.0.23(@babel/core@7.28.4)(@expo/metro-runtime@5.0.5(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0))(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)):
     dependencies:
       '@expo/config': 11.0.13
@@ -11783,6 +11824,8 @@ snapshots:
       chardet: 0.7.0
       iconv-lite: 0.4.24
       tmp: 0.0.33
+
+  fast-base64-decode@1.0.0: {}
 
   fast-deep-equal@3.1.3: {}
 
@@ -14397,6 +14440,11 @@ snapshots:
       react: 19.0.0
       react-native: 0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)
 
+  react-native-get-random-values@1.11.0(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)):
+    dependencies:
+      fast-base64-decode: 1.0.0
+      react-native: 0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)
+
   react-native-iphone-screen-helper@2.2.1(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)):
     dependencies:
       react-native: 0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)
@@ -14417,6 +14465,8 @@ snapshots:
       react-native: 0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0)
       react-native-is-edge-to-edge: 1.2.1(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
       react-native-reanimated: 3.17.5(@babel/core@7.28.4)(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0)
+
+  react-native-keychain@9.2.3: {}
 
   react-native-mmkv@3.1.0(react-native@0.79.4(@babel/core@7.28.4)(@react-native-community/cli@20.0.2(typescript@5.9.3))(@types/react@19.0.14)(react@19.0.0))(react@19.0.0):
     dependencies:

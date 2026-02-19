@@ -212,10 +212,15 @@ export default function CreateIdentity() {
           const responseData = error.response?.data as
             | { error?: string; message?: string }
             | undefined;
-          const errorMessage =
-            responseData?.error ||
-            responseData?.message ||
-            'Error creating identity';
+          const errorText = responseData?.error || responseData?.message || '';
+
+          // Handle specific server validation errors
+          if (errorText.includes('Invalid')) {
+            showErrorMessage(`Validation error: ${errorText}`);
+            return;
+          }
+
+          const errorMessage = errorText || 'Error creating identity';
           showErrorMessage(errorMessage);
         },
       }

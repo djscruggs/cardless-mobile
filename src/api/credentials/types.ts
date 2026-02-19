@@ -20,17 +20,17 @@ export type VerificationCredentialRequest = {
 
 // Token-based credential request (new secure flow with data integrity verification)
 export type TokenBasedCredentialRequest = {
-  verificationToken: string; // REQUIRED - from upload-id response
-  walletAddress: string;
-  // Identity data (for server-side hash verification)
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  birthDate: string;
-  governmentId: string;
+  verificationToken: string; // REQUIRED - from upload-id response (expires in 10 minutes)
+  walletAddress: string; // REQUIRED - Valid Algorand address
+  // Identity data (for server-side hash verification) - MUST match extracted data
+  firstName: string; // Max 100 characters
+  middleName?: string; // Max 100 characters (use empty string '' if not provided)
+  lastName: string; // Max 100 characters
+  birthDate: string; // REQUIRED - Format: YYYY-MM-DD
+  governmentId: string; // Max 50 characters
   idType: 'drivers_license' | 'passport' | 'government_id';
-  state?: string;
-  expirationDate?: string;
+  state?: string; // REQUIRED for drivers_license - Exactly 2 uppercase letters (e.g., "CA", "NY")
+  expirationDate?: string; // Format: YYYY-MM-DD
 };
 
 // Union type for credential requests

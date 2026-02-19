@@ -1,4 +1,4 @@
-package com.cardlessid.development
+package org.cardlessid.development
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

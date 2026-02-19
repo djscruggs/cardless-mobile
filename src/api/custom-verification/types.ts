@@ -30,7 +30,7 @@ export type FraudCheck = {
 export type UploadIdResponse = {
   success: boolean;
   sessionId?: string;
-  verificationToken?: string; // REQUIRED for credential creation
+  verificationToken?: string; // REQUIRED for credential creation - Format: sessionId:dataHmac:timestamp:signature (expires in 10 minutes)
   extractedData?: ExtractedData;
   lowConfidenceFields?: string[]; // AWS Textract quality warnings
   photoUrl?: string;

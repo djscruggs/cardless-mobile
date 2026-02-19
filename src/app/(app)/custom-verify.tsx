@@ -56,12 +56,37 @@ export default function CustomVerify() {
   const [fraudSignals, setFraudSignals] = React.useState<
     { type: string; result: string }[]
   >([]);
+  const [tokenCreatedAt, setTokenCreatedAt] = React.useState<number | null>(
+    null
+  );
+  const [timeRemaining, setTimeRemaining] = React.useState<number>(600); // 10 minutes in seconds
 
   const { mutate: uploadId, isPending: isUploadingId } = useUploadId();
   const { mutate: uploadSelfie, isPending: isUploadingSelfie } =
     useUploadSelfie();
   const { mutate: issueCredential, isPending: isIssuingCredential } =
     useIssueCredential();
+
+  // Timer effect for token expiration (10 minutes)
+  React.useEffect(() => {
+    if (!tokenCreatedAt) return;
+
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - tokenCreatedAt) / 1000);
+      const remaining = Math.max(0, 600 - elapsed); // 600 seconds = 10 minutes
+      setTimeRemaining(remaining);
+
+      if (remaining === 0) {
+        clearInterval(timer);
+        showErrorMessage('Verification token expired. Please start over.');
+        setTimeout(() => {
+          handleStartOver();
+        }, 2000);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [tokenCreatedAt]);
 
   const handlePhotoTaken = async (photos: {
     front: { uri: string; base64?: string };
@@ -124,6 +149,7 @@ export default function CustomVerify() {
           setSessionId(response.sessionId);
           setVerificationToken(response.verificationToken);
           setExtractedData(response.extractedData);
+          setTokenCreatedAt(Date.now()); // Start 10-minute countdown
 
           if (response.isExpired) {
             showMessage({
@@ -305,6 +331,8 @@ export default function CustomVerify() {
     setMatchConfidence(0);
     setMatchSuccess(false);
     setFraudSignals([]);
+    setTokenCreatedAt(null);
+    setTimeRemaining(600);
     setStep('capture-id');
   };
 
@@ -348,12 +376,12 @@ export default function CustomVerify() {
           walletAddress,
           // Identity data for server-side hash verification
           firstName: extractedData.firstName,
-          middleName: extractedData.middleName,
+          middleName: extractedData.middleName || '', // Ensure empty string instead of undefined
           lastName: extractedData.lastName,
           birthDate: extractedData.birthDate,
           governmentId: extractedData.governmentId,
           idType: extractedData.idType,
-          state: extractedData.state,
+          state: extractedData.state?.toUpperCase(), // MUST be uppercase per server requirements
           expirationDate: extractedData.expirationDate,
         },
         {
@@ -389,10 +417,38 @@ export default function CustomVerify() {
               message?: string;
             }>;
             const responseData = axiosError.response?.data;
-            const errorMessage =
-              responseData?.error ||
-              responseData?.message ||
-              'Failed to create identity';
+            const errorText =
+              responseData?.error || responseData?.message || '';
+
+            // Handle new server error types
+            if (errorText.includes('token expired')) {
+              showErrorMessage(
+                'Verification expired (10 min limit). Please start over.'
+              );
+              // Reset to initial state after a delay
+              setTimeout(() => {
+                handleStartOver();
+              }, 3000);
+              return;
+            }
+
+            if (errorText.includes('invalid format')) {
+              showErrorMessage(
+                'Verification error. Please update your app or contact support.'
+              );
+              setStep('error');
+              return;
+            }
+
+            if (errorText.includes('Invalid')) {
+              // Validation error from server
+              showErrorMessage(`Validation error: ${errorText}`);
+              setStep('error');
+              return;
+            }
+
+            // Generic error
+            const errorMessage = errorText || 'Failed to create identity';
             showErrorMessage(errorMessage);
             setStep('error');
           },
@@ -458,6 +514,39 @@ export default function CustomVerify() {
               <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
                 {getStepMessage()}
               </Text>
+
+              {/* Token Expiration Timer */}
+              {tokenCreatedAt && (
+                <View
+                  className={`mb-4 rounded-lg p-3 ${
+                    timeRemaining < 120
+                      ? 'bg-red-50 dark:bg-red-900/20'
+                      : timeRemaining < 300
+                        ? 'bg-yellow-50 dark:bg-yellow-900/20'
+                        : 'bg-blue-50 dark:bg-blue-900/20'
+                  }`}
+                >
+                  <Text
+                    className={`text-center text-sm font-semibold ${
+                      timeRemaining < 120
+                        ? 'text-red-800 dark:text-red-200'
+                        : timeRemaining < 300
+                          ? 'text-yellow-800 dark:text-yellow-200'
+                          : 'text-blue-800 dark:text-blue-200'
+                    }`}
+                  >
+                    {timeRemaining < 120 && '⚠️ '}
+                    Complete verification within:{' '}
+                    {Math.floor(timeRemaining / 60)}:
+                    {(timeRemaining % 60).toString().padStart(2, '0')}
+                  </Text>
+                  {timeRemaining < 120 && (
+                    <Text className="mt-1 text-center text-xs text-red-700 dark:text-red-300">
+                      Verification will expire soon!
+                    </Text>
+                  )}
+                </View>
+              )}
               <View className="mb-4 rounded-t-lg bg-gray-50 p-4 dark:bg-gray-900">
                 <View className="mb-6 space-y-3">
                   <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
@@ -661,6 +750,33 @@ export default function CustomVerify() {
                     Your identity has been verified! Tap below to create your
                     decentralized identity credential.
                   </Text>
+
+                  {/* Token Expiration Timer */}
+                  {tokenCreatedAt && timeRemaining > 0 && (
+                    <View
+                      className={`mb-4 rounded-lg p-3 ${
+                        timeRemaining < 120
+                          ? 'bg-red-50 dark:bg-red-900/20'
+                          : timeRemaining < 300
+                            ? 'bg-yellow-50 dark:bg-yellow-900/20'
+                            : 'bg-blue-50 dark:bg-blue-900/20'
+                      }`}
+                    >
+                      <Text
+                        className={`text-center text-sm font-semibold ${
+                          timeRemaining < 120
+                            ? 'text-red-800 dark:text-red-200'
+                            : timeRemaining < 300
+                              ? 'text-yellow-800 dark:text-yellow-200'
+                              : 'text-blue-800 dark:text-blue-200'
+                        }`}
+                      >
+                        {timeRemaining < 120 && '⚠️ '}
+                        Complete within: {Math.floor(timeRemaining / 60)}:
+                        {(timeRemaining % 60).toString().padStart(2, '0')}
+                      </Text>
+                    </View>
+                  )}
 
                   <View className="mb-6 rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
                     <Text className="text-center text-sm text-green-800 dark:text-green-300">

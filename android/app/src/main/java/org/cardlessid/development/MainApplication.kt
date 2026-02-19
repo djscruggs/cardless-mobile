@@ -1,4 +1,4 @@
-package com.cardlessid.development
+package org.cardlessid.development
 import com.facebook.react.common.assets.ReactFontManager
 
 import android.app.Application

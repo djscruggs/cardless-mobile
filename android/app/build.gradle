@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.cardlessid.development'
+    namespace 'org.cardlessid.development'
     defaultConfig {
-        applicationId 'com.cardlessid.development'
+        applicationId 'org.cardlessid.development'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

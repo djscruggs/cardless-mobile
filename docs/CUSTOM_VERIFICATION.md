@@ -564,21 +564,23 @@ fetch('/api/verification/upload-selfie', {
 ```javascript
 // Submit full identity data + verification token
 // Server will verify data hasn't been tampered with by comparing hash
+// IMPORTANT: Complete within 10 minutes of receiving the token
 fetch('/api/credentials', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    verificationToken: verificationToken, // From Step 1 - REQUIRED
-    walletAddress: userAlgorandAddress, // User's Algorand wallet
+    verificationToken: verificationToken, // From Step 1 - REQUIRED (expires in 10 minutes)
+    walletAddress: userAlgorandAddress, // User's Algorand wallet (must be valid Algorand address)
     // Identity data from Step 1 (for verification against stored hash)
-    firstName: extractedData.firstName,
-    middleName: extractedData.middleName,
-    lastName: extractedData.lastName,
-    birthDate: extractedData.birthDate,
-    governmentId: extractedData.governmentId,
-    idType: extractedData.idType,
-    state: extractedData.state,
-    expirationDate: extractedData.expirationDate,
+    // MUST match extracted data exactly, with proper formatting:
+    firstName: extractedData.firstName, // Max 100 characters
+    middleName: extractedData.middleName || '', // Empty string if not provided (max 100 chars)
+    lastName: extractedData.lastName, // Max 100 characters
+    birthDate: extractedData.birthDate, // YYYY-MM-DD format (required)
+    governmentId: extractedData.governmentId, // Max 50 characters
+    idType: extractedData.idType, // 'drivers_license' | 'passport' | 'government_id'
+    state: extractedData.state?.toUpperCase(), // MUST be 2 uppercase letters (e.g., "CA", "NY")
+    expirationDate: extractedData.expirationDate, // YYYY-MM-DD format (if provided)
   }),
 });
 ```
@@ -647,6 +649,38 @@ fetch('/api/credentials', {
 ```json
 {
   "error": "Data tampering detected - the identity information you submitted does not match what was verified"
+}
+```
+
+**Response (Token Expired - 400):**
+
+```json
+{
+  "error": "Token verification failed: token expired"
+}
+```
+
+**Response (Invalid Token Format - 400):**
+
+```json
+{
+  "error": "Token verification failed: invalid format"
+}
+```
+
+**Response (Validation Error - 400):**
+
+```json
+{
+  "error": "Invalid state - must be 2-letter code"
+}
+// OR
+{
+  "error": "Invalid birthDate format - use YYYY-MM-DD"
+}
+// OR
+{
+  "error": "Invalid Algorand wallet address"
 }
 ```
 
@@ -791,6 +825,7 @@ class CardlessIDClient {
     identityData: any // Data from Step 1 (stored client-side)
   ): Promise<any> {
     // Submit identity data + token for hash verification
+    // IMPORTANT: Must complete within 10 minutes of receiving token
     const response = await fetch(`${this.baseUrl}/api/credentials`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -799,19 +834,30 @@ class CardlessIDClient {
         walletAddress: walletAddress,
         // Identity data for server to verify against stored hash
         firstName: identityData.firstName,
-        middleName: identityData.middleName,
+        middleName: identityData.middleName || '', // Ensure empty string if undefined
         lastName: identityData.lastName,
-        birthDate: identityData.birthDate,
+        birthDate: identityData.birthDate, // Must be YYYY-MM-DD
         governmentId: identityData.governmentId,
         idType: identityData.idType,
-        state: identityData.state,
-        expirationDate: identityData.expirationDate,
+        state: identityData.state?.toUpperCase(), // Must be uppercase
+        expirationDate: identityData.expirationDate, // Must be YYYY-MM-DD if provided
       }),
     });
 
     const data = await response.json();
 
     if (!data.success) {
+      // Handle specific error types
+      const errorMsg = data.error || '';
+      if (errorMsg.includes('token expired')) {
+        throw new Error(
+          'Verification expired (10 min limit). Please start over.'
+        );
+      } else if (errorMsg.includes('invalid format')) {
+        throw new Error('Verification error. Please update your app.');
+      } else if (errorMsg.includes('Invalid')) {
+        throw new Error(`Validation error: ${errorMsg}`);
+      }
       throw new Error(data.error);
     }
 
@@ -879,10 +925,10 @@ await optInToAsset(credential.nft.assetId);
 **Data Integrity Protection:**
 
 - **Hash verification:** Server compares hash of submitted data against stored hash
-- **Token format:** `sessionId:dataHmac:signature`
+- **Token format:** `sessionId:dataHmac:timestamp:signature` (4 parts)
 - **Cannot be forged:** Server secret required to create valid tokens
 - **Tamper detection:** Any modification to identity data is detected and rejected
-- **Token expiration:** 30 minutes (matches session lifetime)
+- **Token expiration:** 10 minutes from token creation (enforced via timestamp in token)
 
 **Why Submit Data Again?**
 

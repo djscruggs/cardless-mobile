@@ -1,17 +1,29 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import * as React from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Animated,
   Dimensions,
   Image,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
 } from 'react-native';
 
 import { Button, Text, View } from '@/components/ui';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+// Get screen dimensions - in landscape, width > height
+const WINDOW = Dimensions.get('window');
+const SCREEN_WIDTH = Math.max(WINDOW.width, WINDOW.height); // Landscape width
+const SCREEN_HEIGHT = Math.min(WINDOW.width, WINDOW.height); // Landscape height
+
+// Standard ID card aspect ratio (CR80 standard: 85.6mm x 53.98mm ≈ 1.586)
+const ID_CARD_ASPECT_RATIO = 1.586;
+// For horizontal orientation, use height as the limiting dimension
+const ID_FRAME_HEIGHT = SCREEN_HEIGHT * 0.5; // 50% of screen height
+const ID_FRAME_WIDTH = ID_FRAME_HEIGHT * ID_CARD_ASPECT_RATIO;
 
 type IdPhotoCaptureProps = {
   onPhotoTaken: (photos: {
@@ -38,6 +50,43 @@ export function IdPhotoCapture({
     uri: string;
     base64?: string;
   } | null>(null);
+
+  // Pulsing animation for capture button
+  const pulseAnim = React.useRef(new Animated.Value(1)).current;
+
+  // Lock screen orientation to landscape
+  React.useEffect(() => {
+    async function lockOrientation() {
+      await ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.LANDSCAPE
+      );
+    }
+    lockOrientation();
+
+    // Unlock orientation when component unmounts
+    return () => {
+      ScreenOrientation.unlockAsync();
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.2,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseAnimation.start();
+    return () => pulseAnimation.stop();
+  }, [pulseAnim]);
 
   const handleTakePhoto = async () => {
     if (!cameraRef.current || isTakingPhoto) return;
@@ -224,50 +273,68 @@ export function IdPhotoCapture({
   return (
     <View className="flex-1">
       <CameraView ref={cameraRef} style={styles.camera} facing="back" />
-      <View style={styles.overlay} className="flex-1 justify-end p-6">
-        {/* Instruction overlay */}
-        <View className="mb-4 rounded-lg bg-black/70 p-4">
-          <Text className="text-center text-lg font-semibold text-white">
-            {step === 'front' ? 'Capture Front of ID' : 'Capture Back of ID'}
-          </Text>
-          <Text className="mt-2 text-center text-white">
-            Position your ID within the frame
-          </Text>
-          <Text className="mt-1 text-center text-sm text-white/70">
-            Make sure all text is clearly visible
-          </Text>
+      <View style={styles.overlay} className="flex-1 flex-row">
+        {/* Left side - ID Card Frame and Instructions */}
+        <View className="flex-1 justify-center">
+          {/* Instruction overlay */}
+          <View className="absolute inset-x-6 top-12">
+            <View className="rounded-lg bg-black/70 p-4">
+              <Text className="text-center text-lg font-semibold text-white">
+                {step === 'front'
+                  ? 'Capture Front of ID'
+                  : 'Capture Back of ID'}
+              </Text>
+              <Text className="mt-2 text-center text-white">
+                Position your ID within the frame
+              </Text>
+              <Text className="mt-1 text-center text-sm text-white/70">
+                Make sure all text is clearly visible
+              </Text>
+              {step === 'back' && (
+                <Text className="mt-2 text-center text-xs text-yellow-400">
+                  ℹ️ Back photo is recommended for better verification
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* ID Card Frame Outline - Centered */}
+          <View style={styles.frameContainer}>
+            <View style={styles.idFrame} />
+          </View>
+
+          {/* Skip button for back photo - bottom left */}
           {step === 'back' && (
-            <Text className="mt-2 text-center text-xs text-yellow-400">
-              ℹ️ Back photo is recommended for better verification
-            </Text>
+            <View className="absolute inset-x-6 bottom-12">
+              <Button
+                label="Skip Back Photo"
+                onPress={handleSkipBack}
+                disabled={isTakingPhoto || isLoading}
+                className="bg-gray-600"
+                testID="skip-back-button"
+              />
+            </View>
           )}
         </View>
 
-        {/* Capture button */}
-        <View className="space-y-3">
-          <Button
-            label={
-              isTakingPhoto
-                ? 'Capturing...'
-                : step === 'front'
-                  ? 'Capture Front'
-                  : 'Capture Back'
-            }
+        {/* Right side - Capture button */}
+        <View style={styles.rightButtonContainer}>
+          <TouchableOpacity
             onPress={handleTakePhoto}
             disabled={isTakingPhoto || isLoading}
-            loading={isTakingPhoto || isLoading}
-            className="bg-blue-600"
+            activeOpacity={0.7}
             testID={`capture-${step}-button`}
-          />
-          {step === 'back' && (
-            <Button
-              label="Skip Back Photo"
-              onPress={handleSkipBack}
-              disabled={isTakingPhoto || isLoading}
-              className="bg-gray-600"
-              testID="skip-back-button"
+          >
+            <Animated.View
+              style={[
+                styles.captureButton,
+                {
+                  transform: [{ scale: isTakingPhoto ? 1 : pulseAnim }],
+                  opacity: isTakingPhoto || isLoading ? 0.5 : 1,
+                },
+              ]}
             />
-          )}
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -289,6 +356,42 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     pointerEvents: 'box-none',
+  },
+  frameContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    pointerEvents: 'none',
+  },
+  idFrame: {
+    width: ID_FRAME_WIDTH,
+    height: ID_FRAME_HEIGHT,
+    borderWidth: 3,
+    borderColor: '#22c55e', // Green color
+    borderStyle: 'dashed',
+    borderRadius: 12,
+  },
+  rightButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    width: 140, // Fixed width for button area on the right
+  },
+  captureButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#ef4444', // Red color
+    borderWidth: 4,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   photoScroller: {
     flex: 1,
