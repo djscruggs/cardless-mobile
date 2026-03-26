@@ -20,7 +20,7 @@ pnpm android                # Android emulator
 pnpm start                  # Expo dev server
 
 # Lint / Type-check / Test
-pnpm lint                   # ESLint on .ts/.tsx
+pnpm lint                   # ESLint on .js/.jsx/.ts/.tsx
 pnpm type-check             # tsc --noemit
 pnpm test                   # Jest
 pnpm test:watch             # Jest watch mode
@@ -82,7 +82,43 @@ All API calls use `react-query-kit` for typed hooks. Three axios clients:
 - `src/api/verification/client.ts` – same base, with verbose interceptor logging
 - `src/api/custom-verification/client.ts` – same base, FormData-aware logging
 
-API modules follow the pattern: `client.ts` + `types.ts` + `use-<action>.ts` hooks.
+#### API Module Directory Structure
+
+Each API domain directory must contain:
+
+- `client.ts` — axios instance with `baseURL: Env.API_URL` and `X-API-Key: Env.CARDLESS_API_KEY` header
+- `types.ts` — named request/response types (e.g., `StartSessionRequest`, `StartSessionResponse`); nested objects get their own named types
+- `use-<action>.ts` — one file per hook, wrapping `createQuery` (GET) or `createMutation` (POST)
+- `index.ts` — barrel file using `export * from './module-name'` for every sibling module
+
+The top-level `src/api/index.tsx` re-exports all domain modules. Import from `@/api`, not from deep paths.
+
+#### react-query-kit Hooks
+
+Use `createQuery` for GET endpoints and `createMutation` for POST endpoints. Always provide three explicit generic type parameters: `<Response, Variables, AxiosError>`. Use `fetcher` (not the deprecated `queryFn`) for queries, and `mutationFn` for mutations. Set `queryKey` to a simple string array.
+
+```ts
+export const useCheckStatus = createQuery<
+  SessionStatusResponse,
+  Variables,
+  AxiosError
+>({
+  queryKey: ['verification-status'],
+  fetcher: (variables: Variables) => {
+    return verificationClient
+      .get(`/api/verification/status/${variables.sessionId}`)
+      .then((response) => response.data);
+  },
+});
+```
+
+#### Axios Client Setup
+
+Every axios client must include both request and response interceptors with emoji-coded logging: `🔵` for outgoing requests (method, URL, data), `🟢` for successful responses (status, data), `🔴` for errors (message, status, URL). Never create an axios client without these debug interceptors.
+
+#### Mutation Error Handling
+
+In `onError` callbacks, cast `error.response?.data` to `{ error?: string; message?: string } | undefined` and build a fallback chain: `responseData?.error || responseData?.message || 'Fallback message'`. Pass the result to `showErrorMessage()`.
 
 Key API modules:
 
@@ -104,6 +140,21 @@ Key API modules:
 `SecureCredentialStorage` uses `react-native-keychain` (iOS Keychain / Android Keystore) with HMAC-SHA256 tamper detection. Exported singleton: `credentialStorage` with methods: `saveCredential`, `getCredential`, `getPersonalData`, `clearCredential`, etc.
 
 `src/lib/secure-document-storage.ts` stores encrypted document IDs separately.
+
+#### Secure Storage Dual-Export Pattern
+
+All secure storage modules (`secure-wallet-storage.ts`, `secure-credential-storage.ts`, `secure-document-storage.ts`) follow the same export pattern: implement as a class with private methods, export a singleton instance, and also export individual functions that delegate to the singleton for backward compatibility.
+
+```ts
+class SecureWalletStorage {
+  async getWalletAddress(): Promise<string | null> { ... }
+}
+
+export const secureWalletStorage = new SecureWalletStorage();
+
+// Individual exports for backward compatibility
+export const getWalletAddress = () => secureWalletStorage.getWalletAddress();
+```
 
 ### Wallet / Algorand (`src/lib/`)
 
@@ -144,3 +195,35 @@ Jest with `jest-expo` preset. Tests match `**/*.test.ts?(x)` or `**/*.spec.ts?(x
 - `state` for driver's license **must be uppercase 2-letter** before sending to server
 - `middleName` must be `''` (empty string) not `undefined` when absent — server validation requires it
 - NFT `assetId` comes from server as `string` due to JSON BigInt limitations; cast to `Number()` when needed for Algorand SDK calls
+
+### Coding Patterns
+
+#### State Machine Pattern for Async Workflows
+
+Use a string union type for workflow steps instead of multiple boolean state variables. Derive convenience booleans (`isLoading`, `isComplete`, `hasError`) from the single state value.
+
+```ts
+type NFTWorkflowState = 'idle' | 'opting-in' | 'transferring' | 'complete' | 'error';
+const [state, setState] = React.useState<NFTWorkflowState>('idle');
+
+return {
+  state,
+  isLoading: state === 'opting-in' || state === 'transferring',
+  isComplete: state === 'complete',
+  hasError: state === 'error',
+};
+```
+
+#### Form Validation with Zod + react-hook-form
+
+Define a Zod schema at module level, derive the form type with `z.infer<typeof schema>`, and use `zodResolver(schema)` with `useForm`. Use `ControlledInput`/`ControlledSelect` components from the UI library for controlled fields.
+
+```ts
+const schema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  idType: z.enum(['passport', 'government_id'], { required_error: 'Please select an ID type' }),
+});
+type FormType = z.infer<typeof schema>;
+
+const { control, handleSubmit } = useForm<FormType>({ resolver: zodResolver(schema) });
+```

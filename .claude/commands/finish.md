@@ -15,7 +15,7 @@ Complete current Git Flow branch: **$ARGUMENTS**
 - Git status: !`git status --porcelain`
 - Unpushed commits: !`git log @{u}.. --oneline 2>/dev/null | wc -l | tr -d ' '`
 - Latest tag: !`git describe --tags --abbrev=0 2>/dev/null || echo "No tags"`
-- Test status: !`npm test 2>/dev/null | tail -20 || echo "No test command available"`
+- Test status: !`pnpm test 2>/dev/null | tail -20 || echo "No test command available"`
 
 ## Task
 

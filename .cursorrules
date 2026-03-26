@@ -22,7 +22,6 @@ src
   ├── api   ## API related code, mainly using axios and react query
   ├── app   ## the main entry point for expo router(file-based routing), when you can find screens and navigation setup
   ├── components  ## shared components
-  │   ├── card.tsx
   │   └── ui  ## core ui components. buttons, inputs, etc
   ├── lib  ## shared libraries, auth, env, hooks, i18n, storage, test-utils, utils
   ├── translations  ## translations files for the app
@@ -84,7 +83,7 @@ Here is a simple example of how a component should be written using :
 ```tsx
 import * as React from 'react';
 
-import { Text, View, Image, SavaAreaView } from '@/components/ui';
+import { Text, View, Image, SafeAreaView } from '@/components/ui';
 
 // Props should be defined in the top of the component
 type Props = {
@@ -98,7 +97,7 @@ export function Title({ text }: Props) {
       <View className="h-[2px] flex-1 bg-neutral-300" />
 
       <Image
-        source={require('@assets/images/demo.png')}
+        source={require('@assets/logo.png')}
         style={{ width: 24, height: 24 }}
         contentFit="contain"
       />
