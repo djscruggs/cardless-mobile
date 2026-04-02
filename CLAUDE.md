@@ -170,6 +170,28 @@ The app creates an Algorand wallet per device. Credentials are issued as ASAs (N
 - **Credential data**: Loaded from Keychain on screen focus (`useFocusEffect`) — not kept in global state
 - **Server state**: TanStack Query via `react-query-kit` hooks
 
+#### Zustand Store Pattern
+
+- **Zustand stores use createSelectors wrapper for property-level subscriptions.** Zustand stores are created with the private \_useStore naming convention, then wrapped with a createSelectors utility that adds a .use property for granular subscriptions. Module-level action functions (signIn, signOut, hydrateAuth) are exported separately using getState() for use outside of React components.
+  ```
+  // Good
+    const _useAuth = create<AuthState>((set, get) => ({
+      status: 'idle',
+      token: null,
+      signIn: (token) => { setToken(token); set({ status: 'signIn', token }); },
+    }));
+    
+    export const useAuth = createSelectors(_useAuth);
+    export const signIn = (token: TokenType) => _useAuth.getState().signIn(token);
+
+  // Bad
+    export const useAuth = create<AuthState>((set) => ({
+      status: 'idle',
+      token: null,
+      signIn: (token) => set({ status: 'signIn', token }),
+    }));
+  ```
+
 ### UI / Styling
 
 - **NativeWind** (Tailwind for React Native) + `tailwind-variants`

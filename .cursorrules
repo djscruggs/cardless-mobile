@@ -72,7 +72,7 @@ src
 ## UI and Styling
 
 - Use Nativewind for styling and components
-- Use built-in ui components such as Button, Input from `@components/ui`
+- Use built-in ui components such as Button, Input from `@/components/ui`
 - Ensure high accessibility (a11y) standards using ARIA roles and native accessibility props.
 - Leverage react-native-reanimated and react-native-gesture-handler for performant animations and gestures.
 - Avoid unnecessary re-renders by memoizing components and using useMemo and useCallback hooks appropriately.
@@ -97,7 +97,7 @@ export function Title({ text }: Props) {
       <View className="h-[2px] flex-1 bg-neutral-300" />
 
       <Image
-        source={require('@assets/logo.png')}
+        source={require('../../assets/logo.png')}
         style={{ width: 24, height: 24 }}
         contentFit="contain"
       />
