@@ -7,6 +7,7 @@ import { showMessage } from 'react-native-flash-message';
 import { useIssueCredential } from '@/api/credentials';
 import type { ExtractedData, LivenessResult } from '@/api/custom-verification';
 import { useUploadId, useUploadSelfie } from '@/api/custom-verification';
+import { useCheckStatus, useStartSession } from '@/api/verification';
 import {
   IdPhotoCapture,
   SelfiePhotoCapture,
@@ -26,8 +27,10 @@ import {
 } from '@/lib';
 
 type VerificationStep =
+  | 'start-session'
   | 'capture-id'
   | 'uploading-id'
+  | 'polling-status'
   | 'review-data'
   | 'capture-selfie'
   | 'uploading-selfie'
@@ -41,7 +44,7 @@ type VerificationStep =
 export default function CustomVerify() {
   const router = useRouter();
   const isDevelopment = Env.APP_ENV !== 'production';
-  const [step, setStep] = React.useState<VerificationStep>('capture-id');
+  const [step, setStep] = React.useState<VerificationStep>('start-session');
   const [sessionId, setSessionId] = React.useState<string | null>(null);
   const [verificationToken, setVerificationToken] = React.useState<
     string | null
@@ -66,6 +69,62 @@ export default function CustomVerify() {
     useUploadSelfie();
   const { mutate: issueCredential, isPending: isIssuingCredential } =
     useIssueCredential();
+  const { mutate: startSession, isPending: isStartingSession } =
+    useStartSession();
+
+  // Poll verification status every 2s when in polling-status step
+  const { data: statusData } = useCheckStatus({
+    variables: { sessionId: sessionId ?? '' },
+    enabled: step === 'polling-status' && !!sessionId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === 'completed' || status === 'failed' ? false : 2000;
+    },
+  });
+
+  // Transition out of polling-status when status resolves
+  React.useEffect(() => {
+    if (step !== 'polling-status' || !statusData) return;
+
+    if (statusData.status === 'completed') {
+      if (statusData.verificationToken && statusData.extractedData) {
+        setVerificationToken(statusData.verificationToken);
+        setExtractedData(statusData.extractedData as ExtractedData);
+        setTokenCreatedAt(Date.now());
+        setStep('review-data');
+        showMessage({ message: 'ID processed successfully!', type: 'success' });
+      } else {
+        showErrorMessage('Verification completed but data is missing');
+        setStep('error');
+      }
+    } else if (statusData.status === 'failed') {
+      showErrorMessage('Verification failed. Please try again.');
+      setStep('error');
+    }
+  }, [statusData, step]);
+
+  // Start session on mount
+  React.useEffect(() => {
+    if (step !== 'start-session') return;
+
+    startSession(
+      { provider: isDevelopment ? 'mock' : 'aws-rekognition' } as Parameters<
+        typeof startSession
+      >[0],
+      {
+        onSuccess: (response) => {
+          setSessionId(response.sessionId);
+          setStep('capture-id');
+        },
+        onError: () => {
+          showErrorMessage(
+            'Failed to start verification session. Please try again.'
+          );
+          setStep('error');
+        },
+      }
+    );
+  }, [startSession, isDevelopment]);
 
   // Timer effect for token expiration (10 minutes)
   React.useEffect(() => {
@@ -128,52 +187,17 @@ export default function CustomVerify() {
         onSuccess: (response) => {
           console.log('✅ ID uploaded successfully:', response);
 
-          // Check for fraud detection in success response (shouldn't happen but defensive)
           if (response.fraudDetected || !response.success) {
-            console.warn('⚠️ Fraud detected in success handler');
+            if (response.fraudCheck && !response.fraudCheck.passed) {
+              setFraudSignals(response.fraudCheck.signals || []);
+            }
             setStep('fraud-detected');
             return;
           }
-
-          // Validate required fields
-          if (
-            !response.sessionId ||
-            !response.verificationToken ||
-            !response.extractedData
-          ) {
-            showErrorMessage('Invalid response from server');
-            setStep('error');
-            return;
-          }
-
-          setSessionId(response.sessionId);
-          setVerificationToken(response.verificationToken);
-          setExtractedData(response.extractedData);
-          setTokenCreatedAt(Date.now()); // Start 10-minute countdown
 
           if (response.isExpired) {
             showMessage({
               message: 'Warning: Your ID appears to be expired',
-              type: 'warning',
-              duration: 4000,
-            });
-          }
-
-          // Check fraud check results
-          if (response.fraudCheck && !response.fraudCheck.passed) {
-            console.warn('⚠️ Fraud check failed:', response.fraudCheck);
-            setFraudSignals(response.fraudCheck.signals || []);
-            setStep('fraud-detected');
-            return;
-          }
-
-          // Show warnings for low confidence or suspicious signals
-          if (
-            response.fraudCheck?.signals &&
-            response.fraudCheck.signals.length > 0
-          ) {
-            showMessage({
-              message: 'Warning: Document quality issues detected',
               type: 'warning',
               duration: 4000,
             });
@@ -190,11 +214,21 @@ export default function CustomVerify() {
             });
           }
 
-          setStep('review-data');
-          showMessage({
-            message: 'ID processed successfully!',
-            type: 'success',
-          });
+          // If server returned token+data directly (legacy), use them;
+          // otherwise poll status endpoint per spec.
+          if (response.verificationToken && response.extractedData) {
+            setVerificationToken(response.verificationToken);
+            setExtractedData(response.extractedData);
+            setTokenCreatedAt(Date.now());
+            setStep('review-data');
+            showMessage({
+              message: 'ID processed successfully!',
+              type: 'success',
+            });
+          } else {
+            // Transition to polling — sessionId already set above from start-session
+            setStep('polling-status');
+          }
         },
         onError: (error) => {
           console.error('❌ Error uploading ID:', error);
@@ -333,7 +367,7 @@ export default function CustomVerify() {
     setFraudSignals([]);
     setTokenCreatedAt(null);
     setTimeRemaining(600);
-    setStep('capture-id');
+    setStep('start-session');
   };
 
   const handleRetakeId = () => {
@@ -463,10 +497,14 @@ export default function CustomVerify() {
 
   const getStepMessage = () => {
     switch (step) {
+      case 'start-session':
+        return 'Starting Session...';
       case 'capture-id':
         return 'Capture Your ID';
       case 'uploading-id':
         return 'Processing ID...';
+      case 'polling-status':
+        return 'Verifying ID...';
       case 'review-data':
         return 'Review ID Data';
       case 'capture-selfie':
@@ -497,6 +535,27 @@ export default function CustomVerify() {
         }}
       />
       <FocusAwareStatusBar />
+
+      {/* Session initialization */}
+      {(step === 'start-session' || isStartingSession) && (
+        <View className="flex-1 items-center justify-center p-6">
+          <Text className="text-center text-lg dark:text-white">
+            Starting verification session...
+          </Text>
+        </View>
+      )}
+
+      {/* Status polling */}
+      {step === 'polling-status' && (
+        <View className="flex-1 items-center justify-center p-6">
+          <Text className="mb-2 text-center text-lg dark:text-white">
+            Verifying ID...
+          </Text>
+          <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
+            This may take a few seconds
+          </Text>
+        </View>
+      )}
 
       {/* ID Capture */}
       {(step === 'capture-id' || step === 'uploading-id') && (

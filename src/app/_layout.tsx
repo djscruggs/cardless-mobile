@@ -50,80 +50,38 @@ export default function RootLayout() {
       const { hostname, path, queryParams } = Linking.parse(url);
 
       // Handle age verification requests
-      // Supports 3 formats:
-      // 1. cardlessid://verify?challenge=chal_123 (CardlessID CDN integration)
-      // 2. cardlessid://verify?session=age_123 (Demo mode)
-      // 3. cardlessid://verify?data=<base64-json> (Standalone mode)
-      if (hostname === 'verify' || path === 'verify') {
-        const challengeId = queryParams?.challenge as string | undefined;
-        const sessionId = queryParams?.session as string | undefined;
-        const encodedData = queryParams?.data as string | undefined;
+      // Supports 2 formats:
+      // 1. https://cardlessid.org/app/wallet-verify?nonce=<NONCE>&minAge=<MIN_AGE> (spec)
+      // 2. cardlessid://verify?nonce=<NONCE>&minAge=<MIN_AGE> (deep link variant)
+      const isWalletVerify =
+        path === '/app/wallet-verify' ||
+        hostname === 'verify' ||
+        path === 'verify';
 
-        // Mode 1: Challenge-based (CardlessID CDN)
-        if (challengeId) {
+      if (isWalletVerify) {
+        const nonce = queryParams?.nonce as string | undefined;
+        const minAge = queryParams?.minAge as string | undefined;
+
+        if (nonce && minAge) {
           Alert.alert(
             'Age Verification Request',
-            'A website is requesting age verification via CardlessID.',
+            'A website is requesting age verification.',
             [
               {
                 text: 'Verify',
                 onPress: () => {
                   router.push({
                     pathname: '/(app)/scan',
-                    params: { challenge: challengeId },
+                    params: { nonce, minAge },
                   });
                 },
               },
               { text: 'Cancel', style: 'cancel' },
             ]
           );
-        }
-        // Mode 2: Session-based (Demo)
-        else if (sessionId) {
-          Alert.alert(
-            'Age Verification Request',
-            'Demo age verification request.',
-            [
-              {
-                text: 'Verify',
-                onPress: () => {
-                  router.push({
-                    pathname: '/(app)/scan',
-                    params: { session: sessionId },
-                  });
-                },
-              },
-              { text: 'Cancel', style: 'cancel' },
-            ]
-          );
-        }
-        // Mode 3: Standalone (backward compatibility)
-        else if (encodedData) {
-          try {
-            // Decode the base64 data - just validate it's valid JSON
-            const decodedData = atob(encodedData);
-            JSON.parse(decodedData);
-
-            Alert.alert(
-              'Age Verification Request',
-              'A website is requesting age verification.',
-              [
-                {
-                  text: 'Verify',
-                  onPress: () => {
-                    router.push({
-                      pathname: '/(app)/scan',
-                      params: { request: encodedData },
-                    });
-                  },
-                },
-                { text: 'Cancel', style: 'cancel' },
-              ]
-            );
-          } catch (error) {
-            console.error('❌ Error parsing deep link data:', error);
-            Alert.alert('Error', 'Invalid verification request');
-          }
+        } else {
+          console.error('❌ Deep link missing nonce or minAge:', url);
+          Alert.alert('Error', 'Invalid verification request');
         }
       }
     };
