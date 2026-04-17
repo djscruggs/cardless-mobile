@@ -2,6 +2,8 @@ export type VerificationProvider = 'mock' | 'idenfy' | 'stripe_identity';
 
 export type VerificationStatus =
   | 'pending'
+  | 'completed'
+  | 'failed'
   | 'approved'
   | 'rejected'
   | 'expired';
@@ -18,6 +20,15 @@ export type StartSessionResponse = {
   provider: VerificationProvider;
 };
 
+export type ExtractedIdentityData = {
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  governmentId: string;
+  idType: string;
+  state: string;
+};
+
 export type SessionStatusResponse = {
   sessionId: string;
   status: VerificationStatus;
@@ -25,6 +36,8 @@ export type SessionStatusResponse = {
   ready: boolean;
   expiresAt: string;
   credentialIssued: boolean;
+  verificationToken?: string;
+  extractedData?: ExtractedIdentityData;
 };
 
 export type IdentityData = {

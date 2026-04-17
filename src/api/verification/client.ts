@@ -16,7 +16,6 @@ verificationClient.interceptors.request.use(
       method: config.method?.toUpperCase(),
       url: (config.baseURL || '') + (config.url || ''),
       data: config.data,
-      headers: config.headers,
     });
     return config;
   },

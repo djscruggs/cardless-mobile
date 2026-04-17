@@ -87,7 +87,9 @@ const client = z.object({
   VERSION: z.string(),
 
   // ADD YOUR CLIENT ENV VARS HERE
-  API_URL: z.string(),
+  API_URL: z.string().refine((v) => v.startsWith('https://'), {
+    message: 'API_URL must use HTTPS',
+  }),
   CARDLESS_API_KEY: z.string(),
   MOCK_PROVIDER_API_URL: z.string(),
   ALGORAND_NETWORK: z.enum(['localnet', 'testnet', 'mainnet']).optional(),

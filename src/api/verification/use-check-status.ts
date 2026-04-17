@@ -6,6 +6,7 @@ import type { SessionStatusResponse } from './types';
 
 type Variables = {
   sessionId: string;
+  // Pass enabled: false to pause polling once status reaches terminal state
 };
 
 export const useCheckStatus = createQuery<
@@ -19,4 +20,5 @@ export const useCheckStatus = createQuery<
       .get(`/api/verification/status/${variables.sessionId}`)
       .then((response) => response.data);
   },
+  // Callers should set refetchInterval: 2000 and disable when completed/failed
 });
