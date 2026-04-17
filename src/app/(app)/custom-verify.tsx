@@ -1,7 +1,9 @@
 import { Env } from '@env';
 import { type AxiosError } from 'axios';
+import * as Linking from 'expo-linking';
 import { Stack, useRouter } from 'expo-router';
 import * as React from 'react';
+import { ActivityIndicator, Pressable } from 'react-native';
 import { showMessage } from 'react-native-flash-message';
 
 import { useIssueCredential } from '@/api/credentials';
@@ -9,9 +11,13 @@ import type { ExtractedData, LivenessResult } from '@/api/custom-verification';
 import { useUploadId, useUploadSelfie } from '@/api/custom-verification';
 import { useCheckStatus, useStartSession } from '@/api/verification';
 import {
-  IdPhotoCapture,
-  SelfiePhotoCapture,
-} from '@/components/custom-verification';
+  IdCameraView,
+  KycLayout,
+  OrientationGate,
+  ReviewCard,
+  SelfieCameraView,
+  StepIndicator,
+} from '@/components/kyc';
 import {
   Button,
   FocusAwareStatusBar,
@@ -52,9 +58,11 @@ export default function CustomVerify() {
   const [extractedData, setExtractedData] =
     React.useState<ExtractedData | null>(null);
   const [idPhotoData, setIdPhotoData] = React.useState<string | null>(null);
-  const [livenessResult, setLivenessResult] =
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_livenessResult, setLivenessResult] =
     React.useState<LivenessResult | null>(null);
-  const [matchConfidence, setMatchConfidence] = React.useState<number>(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_matchConfidence, setMatchConfidence] = React.useState<number>(0);
   const [matchSuccess, setMatchSuccess] = React.useState<boolean>(false);
   const [fraudSignals, setFraudSignals] = React.useState<
     { type: string; result: string }[]
@@ -63,10 +71,15 @@ export default function CustomVerify() {
     null
   );
   const [timeRemaining, setTimeRemaining] = React.useState<number>(600); // 10 minutes in seconds
+  const [capturePhase, setCapturePhase] = React.useState<'front' | 'back'>(
+    'front'
+  );
+  const [frontPhotoUri, setFrontPhotoUri] = React.useState<string | null>(null);
+  const [backPhotoUri, setBackPhotoUri] = React.useState<string | null>(null);
+  const [selfieUri, setSelfieUri] = React.useState<string | null>(null);
 
-  const { mutate: uploadId, isPending: isUploadingId } = useUploadId();
-  const { mutate: uploadSelfie, isPending: isUploadingSelfie } =
-    useUploadSelfie();
+  const { mutate: uploadId } = useUploadId();
+  const { mutate: uploadSelfie } = useUploadSelfie();
   const { mutate: issueCredential, isPending: isIssuingCredential } =
     useIssueCredential();
   const { mutate: startSession, isPending: isStartingSession } =
@@ -367,23 +380,55 @@ export default function CustomVerify() {
     setFraudSignals([]);
     setTokenCreatedAt(null);
     setTimeRemaining(600);
+    setCapturePhase('front');
+    setFrontPhotoUri(null);
+    setBackPhotoUri(null);
+    setSelfieUri(null);
     setStep('start-session');
   };
 
-  const handleRetakeId = () => {
-    setExtractedData(null);
-    setSessionId(null);
-    setVerificationToken(null);
-    setIdPhotoData(null);
-    setStep('capture-id');
-  };
-
-  const handleRetakeSelfie = () => {
-    setLivenessResult(null);
-    setMatchConfidence(0);
-    setMatchSuccess(false);
+  const handleRetakeSelfieFromReview = () => {
+    setSelfieUri(null);
     setStep('capture-selfie');
   };
+
+  // Called by IdCameraView when a photo is taken
+  const handleIdFrameCaptured = React.useCallback(
+    (base64: string) => {
+      const dataUri = base64.startsWith('data:')
+        ? base64
+        : `data:image/jpeg;base64,${base64}`;
+
+      if (capturePhase === 'front') {
+        setFrontPhotoUri(dataUri);
+        // Passports skip back capture
+        if (extractedData?.idType === 'passport') {
+          handlePhotoTaken({ front: { uri: dataUri, base64: dataUri } });
+        } else {
+          setCapturePhase('back');
+        }
+      } else {
+        setBackPhotoUri(dataUri);
+        handlePhotoTaken({
+          front: { uri: frontPhotoUri!, base64: frontPhotoUri! },
+          back: { uri: dataUri, base64: dataUri },
+        });
+      }
+    },
+    [capturePhase, extractedData, frontPhotoUri, handlePhotoTaken]
+  );
+
+  // Called by SelfieCameraView when selfie is taken
+  const handleSelfieCaptured = React.useCallback(
+    (base64: string) => {
+      const dataUri = base64.startsWith('data:')
+        ? base64
+        : `data:image/jpeg;base64,${base64}`;
+      setSelfieUri(dataUri);
+      handleSelfieCapture({ uri: dataUri, base64: dataUri });
+    },
+    [handleSelfieCapture]
+  );
 
   const handleContinueToSelfie = () => {
     setStep('capture-selfie');
@@ -495,528 +540,292 @@ export default function CustomVerify() {
     }
   };
 
-  const getStepMessage = () => {
-    switch (step) {
-      case 'start-session':
-        return 'Starting Session...';
-      case 'capture-id':
-        return 'Capture Your ID';
-      case 'uploading-id':
-        return 'Processing ID...';
-      case 'polling-status':
-        return 'Verifying ID...';
-      case 'review-data':
-        return 'Review ID Data';
-      case 'capture-selfie':
-        return 'Capture Selfie';
-      case 'uploading-selfie':
-        return 'Verifying...';
-      case 'liveness-failed':
-        return 'Liveness Check Failed';
-      case 'match-result':
-        return matchSuccess ? 'Verification Successful' : 'Face Does Not Match';
-      case 'success':
-        return 'Verified!';
-      case 'fraud-detected':
-        return 'Verification Unavailable';
-      case 'error':
-        return 'Something Went Wrong';
-      default:
-        return '';
-    }
-  };
+  const stepNumber = ((): 1 | 2 | 3 | 4 => {
+    if (step === 'capture-id' && capturePhase === 'back') return 2;
+    if (step === 'capture-selfie' || step === 'uploading-selfie') return 3;
+    if (
+      step === 'review-data' ||
+      step === 'match-result' ||
+      step === 'success' ||
+      step === 'liveness-failed' ||
+      step === 'fraud-detected' ||
+      step === 'error'
+    )
+      return 4;
+    return 1;
+  })();
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: 'Custom Verification',
-          headerBackTitle: 'Back',
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <FocusAwareStatusBar />
 
-      {/* Session initialization */}
+      {/* ── Step: start-session ── */}
       {(step === 'start-session' || isStartingSession) && (
-        <View className="flex-1 items-center justify-center p-6">
-          <Text className="text-center text-lg dark:text-white">
-            Starting verification session...
-          </Text>
-        </View>
-      )}
-
-      {/* Status polling */}
-      {step === 'polling-status' && (
-        <View className="flex-1 items-center justify-center p-6">
-          <Text className="mb-2 text-center text-lg dark:text-white">
-            Verifying ID...
-          </Text>
-          <Text className="text-center text-sm text-gray-500 dark:text-gray-400">
-            This may take a few seconds
-          </Text>
-        </View>
-      )}
-
-      {/* ID Capture */}
-      {(step === 'capture-id' || step === 'uploading-id') && (
-        <IdPhotoCapture
-          onPhotoTaken={handlePhotoTaken}
-          isLoading={isUploadingId}
+        <KycLayout
+          top={<StepIndicator currentStep={1} visible={false} />}
+          middle={
+            <View className="flex-1 items-center justify-center gap-3">
+              <ActivityIndicator size="large" color="#2563EB" />
+              <Text className="text-center text-gray-700">
+                Starting session...
+              </Text>
+            </View>
+          }
+          bottom={<View />}
         />
       )}
 
-      {/* Data Review */}
-      {step === 'review-data' && extractedData && (
-        <ScrollView>
-          <View className="flex-1 p-4">
-            <View className="rounded-lg border-2 border-gray-300 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-              <Text className="mb-4 text-center text-2xl font-bold dark:text-white">
-                {getStepMessage()}
+      {/* ── Steps 1 & 2: ID Capture ── */}
+      {step === 'capture-id' && (
+        <OrientationGate>
+          <View className="flex-1">
+            <View className="absolute inset-x-0 top-8 z-10 px-4">
+              <Text className="text-center text-lg font-semibold text-white">
+                {capturePhase === 'front'
+                  ? 'Front of your ID'
+                  : 'Back of your ID'}
               </Text>
+            </View>
+            <IdCameraView
+              side={capturePhase}
+              onCapture={handleIdFrameCaptured}
+            />
+          </View>
+        </OrientationGate>
+      )}
 
-              {/* Token Expiration Timer */}
+      {/* ── Step 5: Processing (uploading / polling) ── */}
+      {(step === 'uploading-id' ||
+        step === 'polling-status' ||
+        step === 'uploading-selfie') && (
+        <KycLayout
+          top={<StepIndicator currentStep={stepNumber} visible />}
+          middle={
+            <View className="flex-1 items-center justify-center gap-3">
+              <ActivityIndicator size="large" color="#2563EB" />
+              <Text className="text-center text-base font-medium text-gray-700">
+                Verifying your identity...
+              </Text>
+              <Text className="text-center text-sm text-gray-500">
+                This usually takes a few seconds
+              </Text>
+            </View>
+          }
+          bottom={<View />}
+        />
+      )}
+
+      {/* ── Step 3: Selfie ── */}
+      {step === 'capture-selfie' && (
+        <View className="flex-1">
+          <View className="absolute inset-x-0 top-8 z-10 items-center gap-1 px-4">
+            <Text className="text-center text-lg font-semibold text-white">
+              Take a selfie
+            </Text>
+            <Text className="text-center text-sm text-white/80">
+              Look directly at the camera
+            </Text>
+          </View>
+          <SelfieCameraView onCapture={handleSelfieCaptured} />
+        </View>
+      )}
+
+      {/* ── Step 4: Review & Confirm ── */}
+      {step === 'review-data' && extractedData && (
+        <KycLayout
+          top={
+            <View className="gap-1">
+              <StepIndicator currentStep={4} visible />
+              <Text className="text-center text-lg font-semibold text-gray-900">
+                Review your photos
+              </Text>
+              <Text className="text-center text-sm text-gray-500">
+                Make sure everything looks clear before submitting
+              </Text>
+            </View>
+          }
+          middle={
+            <ScrollView className="flex-1 px-4 pt-2">
+              {frontPhotoUri && (
+                <ReviewCard
+                  label="ID Front"
+                  imageUri={frontPhotoUri}
+                  onRetake={() => {
+                    setCapturePhase('front');
+                    setFrontPhotoUri(null);
+                    setBackPhotoUri(null);
+                    setStep('capture-id');
+                  }}
+                />
+              )}
+              {backPhotoUri && (
+                <ReviewCard
+                  label="ID Back"
+                  imageUri={backPhotoUri}
+                  onRetake={() => {
+                    setCapturePhase('back');
+                    setBackPhotoUri(null);
+                    setStep('capture-id');
+                  }}
+                />
+              )}
+              {selfieUri && (
+                <ReviewCard
+                  label="Selfie"
+                  imageUri={selfieUri}
+                  circular
+                  onRetake={handleRetakeSelfieFromReview}
+                />
+              )}
               {tokenCreatedAt && (
                 <View
-                  className={`mb-4 rounded-lg p-3 ${
-                    timeRemaining < 120
-                      ? 'bg-red-50 dark:bg-red-900/20'
-                      : timeRemaining < 300
-                        ? 'bg-yellow-50 dark:bg-yellow-900/20'
-                        : 'bg-blue-50 dark:bg-blue-900/20'
-                  }`}
+                  className={`mb-2 rounded-lg p-3 ${timeRemaining < 120 ? 'bg-red-50' : timeRemaining < 300 ? 'bg-yellow-50' : 'bg-blue-50'}`}
                 >
                   <Text
-                    className={`text-center text-sm font-semibold ${
-                      timeRemaining < 120
-                        ? 'text-red-800 dark:text-red-200'
-                        : timeRemaining < 300
-                          ? 'text-yellow-800 dark:text-yellow-200'
-                          : 'text-blue-800 dark:text-blue-200'
-                    }`}
+                    className={`text-center text-sm font-semibold ${timeRemaining < 120 ? 'text-red-800' : timeRemaining < 300 ? 'text-yellow-800' : 'text-blue-800'}`}
                   >
-                    {timeRemaining < 120 && '⚠️ '}
-                    Complete verification within:{' '}
-                    {Math.floor(timeRemaining / 60)}:
+                    Complete within: {Math.floor(timeRemaining / 60)}:
                     {(timeRemaining % 60).toString().padStart(2, '0')}
                   </Text>
-                  {timeRemaining < 120 && (
-                    <Text className="mt-1 text-center text-xs text-red-700 dark:text-red-300">
-                      Verification will expire soon!
-                    </Text>
-                  )}
                 </View>
               )}
-              <View className="mb-4 rounded-t-lg bg-gray-50 p-4 dark:bg-gray-900">
-                <View className="mb-6 space-y-3">
-                  <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <Text className="text-sm text-gray-500 dark:text-gray-400">
-                      Name
-                    </Text>
-                    <Text className="mt-1 text-lg font-medium dark:text-white">
-                      {extractedData.firstName}{' '}
-                      {extractedData.middleName
-                        ? `${extractedData.middleName} `
-                        : ''}
-                      {extractedData.lastName}
-                    </Text>
-                  </View>
-
-                  <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <Text className="text-sm text-gray-500 dark:text-gray-400">
-                      Date of Birth
-                    </Text>
-                    <Text className="mt-1 text-lg font-medium dark:text-white">
-                      {extractedData.birthDate}
-                    </Text>
-                  </View>
-
-                  <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <Text className="text-sm text-gray-500 dark:text-gray-400">
-                      ID Type
-                    </Text>
-                    <Text className="mt-1 text-lg font-medium dark:text-white">
-                      {extractedData.idType === 'drivers_license'
-                        ? "Driver's License"
-                        : extractedData.idType === 'passport'
-                          ? 'Passport'
-                          : 'Government ID'}
-                    </Text>
-                  </View>
-
-                  <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                    <Text className="text-sm text-gray-500 dark:text-gray-400">
-                      ID Number
-                    </Text>
-                    <Text className="mt-1 text-lg font-medium dark:text-white">
-                      {extractedData.governmentId}
-                    </Text>
-                  </View>
-
-                  {extractedData.state && (
-                    <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                      <Text className="text-sm text-gray-500 dark:text-gray-400">
-                        State
-                      </Text>
-                      <Text className="mt-1 text-lg font-medium dark:text-white">
-                        {extractedData.state}
-                      </Text>
-                    </View>
-                  )}
-
-                  {extractedData.expirationDate && (
-                    <View className="rounded-lg bg-gray-50 p-4 dark:bg-gray-900">
-                      <Text className="text-sm text-gray-500 dark:text-gray-400">
-                        Expiration Date
-                      </Text>
-                      <Text className="mt-1 text-lg font-medium dark:text-white">
-                        {extractedData.expirationDate}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-              <View className="space-y-3">
-                <Button
-                  label="Continue to Selfie"
-                  onPress={handleContinueToSelfie}
-                  testID="continue-button"
-                />
-                <Button
-                  label="Retake Photo"
-                  variant="outline"
-                  onPress={handleRetakeId}
-                  testID="retake-button"
-                />
-              </View>
-
-              {sessionId && (
-                <View className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-700">
-                  <Text className="text-center text-xs text-gray-500 dark:text-gray-400">
-                    Session ID: {sessionId}
-                  </Text>
-                </View>
-              )}
+            </ScrollView>
+          }
+          bottom={
+            <View className="gap-2">
+              <Button
+                label="Submit for Verification"
+                onPress={handleContinueToSelfie}
+                testID="continue-button"
+              />
+              <Pressable onPress={handleStartOver} className="py-2">
+                <Text className="text-center text-sm text-gray-500">
+                  Start over
+                </Text>
+              </Pressable>
             </View>
-          </View>
-        </ScrollView>
-      )}
-
-      {/* Selfie Capture */}
-      {(step === 'capture-selfie' || step === 'uploading-selfie') && (
-        <SelfiePhotoCapture
-          onPhotoTaken={handleSelfieCapture}
-          isLoading={isUploadingSelfie}
+          }
         />
       )}
 
-      {/* Liveness Check Failed */}
-      {step === 'liveness-failed' && (
-        <ScrollView>
-          <View className="flex-1 items-center justify-center p-4">
-            <View className="w-full max-w-md rounded-lg border-2 border-red-300 bg-white p-6 dark:border-red-700 dark:bg-gray-800">
-              <Text className="mb-4 text-center text-2xl font-bold text-red-600 dark:text-red-400">
-                {getStepMessage()}
-              </Text>
-
-              <Text className="mb-4 text-center text-gray-700 dark:text-gray-300">
-                We couldn&apos;t verify that you&apos;re a live person. Please
-                try again.
-              </Text>
-
-              {livenessResult?.issues && livenessResult.issues.length > 0 && (
-                <View className="mb-6 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
-                  <Text className="mb-2 font-semibold text-red-900 dark:text-red-200">
-                    Issues detected:
-                  </Text>
-                  {livenessResult.issues.map((issue, index) => (
-                    <Text
-                      key={index}
-                      className="text-sm text-red-800 dark:text-red-300"
-                    >
-                      • {issue}
+      {/* ── Step 6a: Success ── */}
+      {step === 'match-result' && matchSuccess && (
+        <KycLayout
+          top={<StepIndicator currentStep={4} visible />}
+          middle={
+            <ScrollView className="flex-1 px-4 pt-4">
+              <View className="items-center gap-2 pb-4">
+                <Text className="text-5xl text-green-600">✓</Text>
+                <Text className="text-2xl font-semibold text-gray-900">
+                  Identity Verified
+                </Text>
+                <Text className="text-sm text-gray-500">
+                  Here&apos;s what we captured:
+                </Text>
+              </View>
+              <View className="rounded-xl border border-gray-200 bg-white">
+                {[
+                  [
+                    'Full Name',
+                    `${extractedData?.firstName ?? ''} ${extractedData?.middleName ? extractedData.middleName + ' ' : ''}${extractedData?.lastName ?? ''}`,
+                  ],
+                  ['Date of Birth', extractedData?.birthDate ?? ''],
+                  ['ID Number', extractedData?.governmentId ?? ''],
+                  ['Expiration', extractedData?.expirationDate ?? '—'],
+                  ['State', extractedData?.state ?? '—'],
+                ].map(([label, value], i, arr) => (
+                  <View
+                    key={label}
+                    className={`flex-row items-center justify-between px-4 py-3 ${i < arr.length - 1 ? 'border-b border-gray-200' : ''}`}
+                  >
+                    <Text className="text-xs uppercase tracking-wide text-gray-500">
+                      {label}
                     </Text>
-                  ))}
-                </View>
-              )}
-
-              <View className="mb-4 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                <Text className="mb-2 font-semibold text-blue-900 dark:text-blue-200">
-                  Tips for better results:
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Ensure good lighting
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Face the camera directly
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Keep eyes open and visible
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Remove sunglasses or hats
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Hold device steady
-                </Text>
+                    <Text className="text-sm text-gray-900">{value}</Text>
+                  </View>
+                ))}
               </View>
-
-              <View className="space-y-3">
-                <Button
-                  label="Try Again"
-                  onPress={handleRetakeSelfie}
-                  testID="retry-selfie-button"
-                />
-                <Button
-                  label="Start Over"
-                  variant="outline"
-                  onPress={handleStartOver}
-                  testID="start-over-button"
-                />
-              </View>
-            </View>
-          </View>
-        </ScrollView>
+              <Text className="mt-4 px-2 text-center text-xs italic text-gray-500">
+                This information will be stored in your local wallet and is
+                never shared without your permission.
+              </Text>
+            </ScrollView>
+          }
+          bottom={
+            <Button
+              label={isIssuingCredential ? 'Creating Identity...' : 'Continue'}
+              onPress={handleVerificationComplete}
+              disabled={isIssuingCredential}
+              loading={isIssuingCredential}
+              testID="continue-to-credential-button"
+            />
+          }
+        />
       )}
 
-      {/* Match Result */}
-      {step === 'match-result' && (
-        <ScrollView>
-          <View className="flex-1 items-center justify-center p-4">
-            <View
-              className={`w-full max-w-md rounded-lg border-2 p-6 ${
-                matchSuccess
-                  ? 'border-green-300 bg-white dark:border-green-700 dark:bg-gray-800'
-                  : 'border-red-300 bg-white dark:border-red-700 dark:bg-gray-800'
-              }`}
-            >
-              <Text
-                className={`mb-4 text-center text-2xl font-bold ${
-                  matchSuccess
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}
-              >
-                {getStepMessage()}
-              </Text>
-
-              {matchSuccess ? (
-                <>
-                  <View className="mb-6 items-center">
-                    <Text className="text-6xl">✓</Text>
-                  </View>
-
-                  <Text className="mb-4 text-center text-gray-700 dark:text-gray-300">
-                    Your identity has been verified! Tap below to create your
-                    decentralized identity credential.
-                  </Text>
-
-                  {/* Token Expiration Timer */}
-                  {tokenCreatedAt && timeRemaining > 0 && (
-                    <View
-                      className={`mb-4 rounded-lg p-3 ${
-                        timeRemaining < 120
-                          ? 'bg-red-50 dark:bg-red-900/20'
-                          : timeRemaining < 300
-                            ? 'bg-yellow-50 dark:bg-yellow-900/20'
-                            : 'bg-blue-50 dark:bg-blue-900/20'
-                      }`}
-                    >
-                      <Text
-                        className={`text-center text-sm font-semibold ${
-                          timeRemaining < 120
-                            ? 'text-red-800 dark:text-red-200'
-                            : timeRemaining < 300
-                              ? 'text-yellow-800 dark:text-yellow-200'
-                              : 'text-blue-800 dark:text-blue-200'
-                        }`}
-                      >
-                        {timeRemaining < 120 && '⚠️ '}
-                        Complete within: {Math.floor(timeRemaining / 60)}:
-                        {(timeRemaining % 60).toString().padStart(2, '0')}
-                      </Text>
-                    </View>
-                  )}
-
-                  <View className="mb-6 rounded-lg bg-green-50 p-4 dark:bg-green-900/20">
-                    <Text className="text-center text-sm text-green-800 dark:text-green-300">
-                      Match Confidence: {(matchConfidence * 100).toFixed(1)}%
-                    </Text>
-                    {livenessResult && (
-                      <Text className="mt-1 text-center text-sm text-green-800 dark:text-green-300">
-                        Liveness Score:{' '}
-                        {(livenessResult.confidence * 100).toFixed(1)}%
-                      </Text>
-                    )}
-                  </View>
-
-                  <Button
-                    label={
-                      isIssuingCredential
-                        ? 'Creating Identity...'
-                        : 'Create Identity'
-                    }
-                    onPress={handleVerificationComplete}
-                    disabled={isIssuingCredential}
-                    loading={isIssuingCredential}
-                    testID="continue-to-credential-button"
-                  />
-                </>
-              ) : (
-                <>
-                  <View className="mb-6 items-center">
-                    <Text className="text-6xl">✗</Text>
-                  </View>
-
-                  <Text className="mb-4 text-center text-gray-700 dark:text-gray-300">
-                    The face in your selfie doesn&apos;t match the ID photo.
-                  </Text>
-
-                  <View className="mb-6 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
-                    <Text className="text-center text-sm text-red-800 dark:text-red-300">
-                      Match Confidence: {(matchConfidence * 100).toFixed(1)}%
-                    </Text>
-                  </View>
-
-                  <View className="mb-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                    <Text className="mb-2 font-semibold text-blue-900 dark:text-blue-200">
-                      Please ensure:
-                    </Text>
-                    <Text className="text-sm text-blue-800 dark:text-blue-300">
-                      • Same person in both photos
-                    </Text>
-                    <Text className="text-sm text-blue-800 dark:text-blue-300">
-                      • Good lighting in both images
-                    </Text>
-                    <Text className="text-sm text-blue-800 dark:text-blue-300">
-                      • Face clearly visible
-                    </Text>
-                    <Text className="text-sm text-blue-800 dark:text-blue-300">
-                      • ID photo shows your face
-                    </Text>
-                  </View>
-
-                  <View className="space-y-3">
-                    <Button
-                      label="Retake Selfie"
-                      onPress={handleRetakeSelfie}
-                      testID="retry-selfie-button"
-                    />
-                    <Button
-                      label="Start Over"
-                      variant="outline"
-                      onPress={handleStartOver}
-                      testID="start-over-button"
-                    />
-                  </View>
-                </>
-              )}
-            </View>
-          </View>
-        </ScrollView>
-      )}
-
-      {/* Fraud Detected */}
-      {step === 'fraud-detected' && (
-        <ScrollView>
-          <View className="flex-1 items-center justify-center p-4">
-            <View className="w-full max-w-md rounded-lg border-2 border-orange-300 bg-white p-6 dark:border-orange-700 dark:bg-gray-800">
-              <Text className="mb-4 text-center text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {getStepMessage()}
-              </Text>
-
-              <Text className="mb-6 text-center text-gray-700 dark:text-gray-300">
-                We&apos;re unable to verify your identity at this time. This may
-                happen if the document quality is insufficient or if there are
-                issues with the photo.
-              </Text>
-
-              <View className="mb-6 rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                <Text className="mb-2 font-semibold text-blue-900 dark:text-blue-200">
-                  What you can do:
+      {/* ── Step 6b: Failure (match fail / liveness / fraud / error) ── */}
+      {((step === 'match-result' && !matchSuccess) ||
+        step === 'liveness-failed' ||
+        step === 'fraud-detected' ||
+        step === 'error') && (
+        <KycLayout
+          top={<StepIndicator currentStep={4} visible />}
+          middle={
+            <ScrollView className="flex-1 px-4 pt-4">
+              <View className="items-center gap-2 pb-4">
+                <Text className="text-5xl text-red-600">✗</Text>
+                <Text className="text-2xl font-semibold text-gray-900">
+                  Verification Failed
                 </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Ensure your ID is an original, unaltered document
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Take a clear, well-lit photo
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Avoid glare or shadows on the document
-                </Text>
-                <Text className="text-sm text-blue-800 dark:text-blue-300">
-                  • Make sure all text is clearly visible
+                <Text className="text-center text-base text-gray-600">
+                  {step === 'liveness-failed'
+                    ? "We couldn't verify that you're a live person."
+                    : step === 'fraud-detected'
+                      ? "We're unable to verify your identity at this time."
+                      : step === 'match-result'
+                        ? "The face in your selfie doesn't match the ID photo."
+                        : "We weren't able to verify your identity. This can happen if photos were blurry or didn't match."}
                 </Text>
               </View>
-
+              <Text className="text-center text-sm text-gray-500">
+                Common fixes: better lighting, remove glare, make sure your full
+                face is fully visible.
+              </Text>
               {isDevelopment && fraudSignals.length > 0 && (
-                <View className="mb-6 rounded-lg bg-yellow-50 p-4 dark:bg-yellow-900/20">
-                  <Text className="mb-2 font-semibold text-yellow-900 dark:text-yellow-200">
-                    🔧 Debug Info (Dev Only):
+                <View className="mt-4 rounded-lg bg-yellow-50 p-4">
+                  <Text className="mb-2 font-semibold text-yellow-900">
+                    Debug Info (Dev Only):
                   </Text>
-                  {fraudSignals.map((signal, index) => (
-                    <Text
-                      key={index}
-                      className="font-mono text-xs text-yellow-800 dark:text-yellow-300"
-                    >
+                  {fraudSignals.map((signal, i) => (
+                    <Text key={i} className="font-mono text-xs text-yellow-800">
                       • {signal.type}: {signal.result}
                     </Text>
                   ))}
                 </View>
               )}
-
-              <View className="mb-6 rounded-lg bg-gray-100 p-4 dark:bg-gray-700">
-                <Text className="mb-2 font-semibold text-gray-900 dark:text-gray-100">
-                  Need Help?
+            </ScrollView>
+          }
+          bottom={
+            <View className="gap-2">
+              <Button
+                label="Try Again"
+                onPress={handleStartOver}
+                testID="try-again-button"
+              />
+              <Pressable
+                onPress={() =>
+                  Linking.openURL('https://cardlessid.org/support/user-help')
+                }
+                className="py-2"
+              >
+                <Text className="text-center text-sm text-gray-500">
+                  Get help
                 </Text>
-                <Text className="text-sm text-gray-700 dark:text-gray-300">
-                  If you believe this is an error, please contact our support
-                  team for assistance with manual verification.
-                </Text>
-              </View>
-
-              <View className="space-y-3">
-                {isDevelopment && (
-                  <Button
-                    label="Try Again (Dev Only)"
-                    onPress={handleStartOver}
-                    testID="dev-retry-button"
-                  />
-                )}
-                <Button
-                  label="Contact Support"
-                  onPress={() => {
-                    // TODO: Open support contact method
-                    showMessage({
-                      message: 'Support contact coming soon',
-                      type: 'info',
-                    });
-                  }}
-                  testID="contact-support-button"
-                />
-                <Button
-                  label="Go Back"
-                  variant="outline"
-                  onPress={() => router.back()}
-                  testID="go-back-button"
-                />
-              </View>
+              </Pressable>
             </View>
-          </View>
-        </ScrollView>
-      )}
-
-      {/* Error State */}
-      {step === 'error' && (
-        <View className="flex-1 items-center justify-center p-4">
-          <Text className="mb-4 text-center text-xl font-bold text-red-600 dark:text-red-400">
-            {getStepMessage()}
-          </Text>
-          <Button
-            label="Start Over"
-            onPress={handleStartOver}
-            testID="try-again-button"
-          />
-        </View>
+          }
+        />
       )}
     </>
   );
