@@ -48,6 +48,7 @@ export type UploadSelfieRequest = {
   sessionId: string;
   image: string; // base64 data URL - selfie
   idPhoto: string; // base64 data URL - ID photo from Step 1 (stored client-side)
+  videoUri?: string; // local file URI of liveness video recorded during selfie
 };
 
 export type LivenessResult = {

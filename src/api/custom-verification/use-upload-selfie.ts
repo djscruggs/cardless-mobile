@@ -12,6 +12,13 @@ export const useUploadSelfie = createMutation<Response, Variables, Error>({
     formData.append('sessionId', variables.sessionId);
     formData.append('selfie', variables.image);
     formData.append('idPhoto', variables.idPhoto);
+    if (variables.videoUri) {
+      formData.append('video', {
+        uri: variables.videoUri,
+        type: 'video/mp4',
+        name: 'liveness.mp4',
+      } as unknown as Blob);
+    }
 
     const response = await customVerificationClient.post<Response>(
       '/api/verification/upload-selfie',

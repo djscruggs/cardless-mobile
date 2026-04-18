@@ -279,6 +279,7 @@ export default function CustomVerify() {
   const handleSelfieCapture = async (photo: {
     uri: string;
     base64?: string;
+    videoUri?: string;
   }) => {
     console.log('📸 Selfie captured:', { uri: photo.uri });
 
@@ -309,7 +310,8 @@ export default function CustomVerify() {
       {
         sessionId,
         image: selfieData,
-        idPhoto: idPhotoData, // Send stored ID photo!
+        idPhoto: idPhotoData,
+        videoUri: photo.videoUri,
       },
       {
         onSuccess: (response) => {
@@ -420,12 +422,12 @@ export default function CustomVerify() {
 
   // Called by SelfieCameraView when selfie is taken
   const handleSelfieCaptured = React.useCallback(
-    (base64: string) => {
+    (base64: string, videoUri: string) => {
       const dataUri = base64.startsWith('data:')
         ? base64
         : `data:image/jpeg;base64,${base64}`;
       setSelfieUri(dataUri);
-      handleSelfieCapture({ uri: dataUri, base64: dataUri });
+      handleSelfieCapture({ uri: dataUri, base64: dataUri, videoUri });
     },
     [handleSelfieCapture]
   );

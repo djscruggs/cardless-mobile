@@ -11,7 +11,7 @@ import {
 import { Text } from '@/components/ui';
 
 type Props = {
-  onCapture: (base64: string) => void;
+  onCapture: (base64: string, videoUri: string) => void;
 };
 
 function OvalOverlay({ sh, ow, oh }: { sh: number; ow: number; oh: number }) {
@@ -50,14 +50,33 @@ export function SelfieCameraView({ onCapture }: Props) {
   const [captured, setCaptured] = React.useState(false);
   const cameraRef = React.useRef<CameraView>(null);
   const flashOpacity = React.useRef(new Animated.Value(0)).current;
+  const recordingRef = React.useRef<Promise<
+    { uri: string } | undefined
+  > | null>(null);
 
   const { width: sw, height: sh } = Dimensions.get('window');
   const ow = sw * 0.55;
   const oh = sh * 0.75;
 
+  React.useEffect(() => {
+    let active = true;
+    const startRecording = async () => {
+      // Wait a tick for the camera to be ready
+      await new Promise((r) => setTimeout(r, 500));
+      if (!active || !cameraRef.current) return;
+      recordingRef.current = cameraRef.current.recordAsync({ maxDuration: 30 });
+    };
+    startRecording();
+    return () => {
+      active = false;
+      cameraRef.current?.stopRecording();
+    };
+  }, []);
+
   const handleCapture = React.useCallback(async () => {
     if (captured || !cameraRef.current) return;
     setCaptured(true);
+
     Animated.sequence([
       Animated.timing(flashOpacity, {
         toValue: 1,
@@ -70,11 +89,20 @@ export function SelfieCameraView({ onCapture }: Props) {
         useNativeDriver: true,
       }),
     ]).start();
-    const photo = await cameraRef.current.takePictureAsync({
-      quality: 0.9,
-      base64: true,
-    });
-    if (photo?.base64) onCapture(photo.base64);
+
+    const [photo, videoResult] = await Promise.all([
+      cameraRef.current.takePictureAsync({ quality: 0.9, base64: true }),
+      (async () => {
+        cameraRef.current?.stopRecording();
+        return recordingRef.current;
+      })(),
+    ]);
+
+    if (photo?.base64 && videoResult?.uri) {
+      onCapture(photo.base64, videoResult.uri);
+    } else if (photo?.base64) {
+      onCapture(photo.base64, '');
+    }
   }, [captured, flashOpacity, onCapture]);
 
   if (!permission) return null;
@@ -100,6 +128,7 @@ export function SelfieCameraView({ onCapture }: Props) {
         ref={cameraRef}
         style={StyleSheet.absoluteFill}
         facing="front"
+        mode="video"
       />
       <OvalOverlay sh={sh} ow={ow} oh={oh} />
       <View style={styles.tipContainer} pointerEvents="none">
